@@ -70,7 +70,7 @@ backend/
 └── package.json
 ```
 
-## 🚀 Como Executar
+## 🚀 Como executar
 
 ### Pré-requisitos
 
