@@ -77,7 +77,7 @@ backend/
 - Node.js 18+ instalado
 - npm ou yarn
 
-### 1. Instalar Dependências
+### 1. Instalar dependências
 
 ```bash
 # Backend
