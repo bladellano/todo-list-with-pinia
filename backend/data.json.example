@@ -1,0 +1,55 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin"
+    }
+  ],
+  "todos": [
+    {
+      "id": 1769154538730,
+      "title": "Criar repositório de prompts",
+      "description": "Tail pork chop ground round chicken jowl beef.  Bacon spare ribs doner brisket, burgdoggen frankfurter biltong tongue. ",
+      "tagIds": [
+        1769154503989
+      ],
+      "done": false,
+      "createdAt": "2026-01-23T07:48:58.730Z"
+    },
+    {
+      "id": 1769154565388,
+      "title": "Teste 2",
+      "description": "Teste 2",
+      "tagIds": [
+        1769154509900
+      ],
+      "done": true,
+      "createdAt": "2026-01-23T07:49:25.388Z",
+      "completedAt": "2026-01-23T07:53:01.874Z"
+    }
+  ],
+  "tags": [
+    {
+      "id": 1769154503989,
+      "name": "CAIO"
+    },
+    {
+      "id": 1769154506680,
+      "name": "ZPT"
+    },
+    {
+      "id": 1769154509900,
+      "name": "NYX"
+    },
+    {
+      "id": 1769154512540,
+      "name": "PAI"
+    },
+    {
+      "id": 1769154517879,
+      "name": "DIVERSOS"
+    }
+  ],
+  "todoOrder": []
+}
