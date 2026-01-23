@@ -155,6 +155,55 @@ app.get('/api/export', async (req, res) => {
   res.json(data);
 });
 
+// Importar dados completos (restore)
+app.post('/api/import', async (req, res) => {
+  try {
+    const importedData = req.body;
+    
+    // Validar estrutura básica
+    if (!importedData.users || !importedData.todos || !importedData.tags) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Arquivo inválido. Estrutura de dados incorreta.' 
+      });
+    }
+    
+    // Validar se é um array
+    if (!Array.isArray(importedData.users) || 
+        !Array.isArray(importedData.todos) || 
+        !Array.isArray(importedData.tags)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Arquivo inválido. Dados devem ser arrays.' 
+      });
+    }
+    
+    // Garantir que todoOrder existe
+    if (!importedData.todoOrder) {
+      importedData.todoOrder = [];
+    }
+    
+    // Salvar dados importados
+    await writeData(importedData);
+    
+    res.json({ 
+      success: true, 
+      message: 'Dados importados com sucesso!',
+      stats: {
+        users: importedData.users.length,
+        todos: importedData.todos.length,
+        tags: importedData.tags.length
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao importar:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao processar arquivo. Verifique o formato.' 
+    });
+  }
+});
+
 // Iniciar servidor
 await initDataFile();
 app.listen(PORT, () => {

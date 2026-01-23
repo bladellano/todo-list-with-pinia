@@ -108,16 +108,29 @@
             Lista ({{ filteredTodos.length }} {{ filteredTodos.length === 1 ? 'tarefa' : 'tarefas' }})
           </h2>
           
-          <button
-            @click="exportData"
-            class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            title="Exportar backup dos dados"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <span>Exportar</span>
-          </button>
+          <div class="flex gap-2">
+            <button
+              @click="importData"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              title="Importar backup dos dados"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <span>Importar</span>
+            </button>
+            
+            <button
+              @click="exportData"
+              class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              title="Exportar backup dos dados"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Exportar</span>
+            </button>
+          </div>
         </div>
         
         <div v-if="filteredTodos.length === 0" class="text-center py-8 text-gray-500">
@@ -313,6 +326,62 @@ async function exportData() {
   } catch (error) {
     console.error('Erro ao exportar:', error)
     alert('Erro ao exportar dados. Verifique se o servidor está rodando.')
+  }
+}
+
+async function importData() {
+  try {
+    // Criar input file temporário
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json,application/json'
+    
+    input.onchange = async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      
+      // Confirmar com o usuário
+      if (!confirm('⚠️ ATENÇÃO: Importar dados irá SUBSTITUIR TODOS os dados atuais. Deseja continuar?')) {
+        return
+      }
+      
+      try {
+        // Ler arquivo
+        const text = await file.text()
+        const importedData = JSON.parse(text)
+        
+        // Enviar para o backend
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${API_URL}/api/import`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(importedData)
+        })
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          alert(`✅ Dados importados com sucesso!\n\n📊 Estatísticas:\n- ${result.stats.users} usuário(s)\n- ${result.stats.todos} tarefa(s)\n- ${result.stats.tags} tag(s)`)
+          
+          // Recarregar dados nas stores
+          await Promise.all([
+            todoStore.fetchTodos(),
+            tagStore.fetchTags()
+          ])
+        } else {
+          alert(`❌ Erro: ${result.message}`)
+        }
+      } catch (error) {
+        console.error('Erro ao importar:', error)
+        alert('❌ Erro ao processar arquivo. Verifique se é um arquivo JSON válido.')
+      }
+    }
+    
+    // Trigger file picker
+    input.click()
+  } catch (error) {
+    console.error('Erro ao importar:', error)
+    alert('Erro ao importar dados. Verifique se o servidor está rodando.')
   }
 }
 </script>
