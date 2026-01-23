@@ -54,9 +54,22 @@
       
       <!-- Lista de tarefas -->
       <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">
-          Lista ({{ todoStore.sortedTodos.length }} {{ todoStore.sortedTodos.length === 1 ? 'tarefa' : 'tarefas' }})
-        </h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">
+            Lista ({{ todoStore.sortedTodos.length }} {{ todoStore.sortedTodos.length === 1 ? 'tarefa' : 'tarefas' }})
+          </h2>
+          
+          <button
+            @click="exportData"
+            class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            title="Exportar backup dos dados"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>Exportar</span>
+          </button>
+        </div>
         
         <div v-if="todoStore.sortedTodos.length === 0" class="text-center py-8 text-gray-500">
           Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!
@@ -184,5 +197,29 @@ async function deleteTodo(id) {
 
 async function toggleDone(todo) {
   await todoStore.updateTodo(todo.id, { done: !todo.done })
+}
+
+async function exportData() {
+  try {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${API_URL}/api/export`)
+    
+    if (!response.ok) {
+      throw new Error('Erro ao exportar dados')
+    }
+    
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  } catch (error) {
+    console.error('Erro ao exportar:', error)
+    alert('Erro ao exportar dados. Verifique se o servidor está rodando.')
+  }
 }
 </script>

@@ -146,6 +146,14 @@ app.delete('/api/tags/:id', async (req, res) => {
   res.json({ success: true });
 });
 
+// Exportar dados completos (backup)
+app.get('/api/export', async (req, res) => {
+  const data = await readData();
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename=todo-backup-${Date.now()}.json`);
+  res.json(data);
+});
+
 // Iniciar servidor
 await initDataFile();
 app.listen(PORT, () => {
