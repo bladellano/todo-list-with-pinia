@@ -52,11 +52,60 @@
         </form>
       </div>
       
+      <!-- Filtros -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
+        
+        <!-- Campo de busca -->
+        <div class="mb-4">
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Buscar por título ou descrição..."
+              class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Filtro por tags -->
+        <div v-if="tagStore.tags.length > 0" class="mb-4">
+          <label class="text-sm font-medium text-gray-700 mb-2 block">Filtrar por tags:</label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="tag in tagStore.tags"
+              :key="tag.id"
+              type="button"
+              @click="toggleFilterTag(tag.id)"
+              class="px-3 py-1 rounded-full text-sm transition"
+              :class="selectedFilterTags.includes(tag.id) 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+            >
+              {{ tag.name }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- Botão limpar filtros -->
+        <div v-if="searchQuery || selectedFilterTags.length > 0" class="flex justify-end">
+          <button
+            @click="clearFilters"
+            class="text-sm text-gray-600 hover:text-gray-800 underline"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+      
       <!-- Lista de tarefas -->
       <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-800">
-            Lista ({{ todoStore.sortedTodos.length }} {{ todoStore.sortedTodos.length === 1 ? 'tarefa' : 'tarefas' }})
+            Lista ({{ filteredTodos.length }} {{ filteredTodos.length === 1 ? 'tarefa' : 'tarefas' }})
           </h2>
           
           <button
@@ -71,13 +120,13 @@
           </button>
         </div>
         
-        <div v-if="todoStore.sortedTodos.length === 0" class="text-center py-8 text-gray-500">
-          Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!
+        <div v-if="filteredTodos.length === 0" class="text-center py-8 text-gray-500">
+          {{ searchQuery || selectedFilterTags.length > 0 ? 'Nenhuma tarefa encontrada com os filtros aplicados.' : 'Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!' }}
         </div>
         
         <div ref="todoListRef" class="space-y-3">
           <TodoItem
-            v-for="todo in todoStore.sortedTodos"
+            v-for="todo in filteredTodos"
             :key="todo.id"
             :todo="todo"
             :tags="getTodoTags(todo)"
@@ -101,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 import { useTagStore } from '../stores/tag'
 import AppLayout from '../components/AppLayout.vue'
@@ -122,6 +171,50 @@ const newTodo = ref({
 const editingTodo = ref(null)
 const todoListRef = ref(null)
 
+// Estados de filtro
+const searchQuery = ref('')
+const selectedFilterTags = ref([])
+
+// Computed para filtrar tarefas
+const filteredTodos = computed(() => {
+  let todos = todoStore.sortedTodos
+  
+  // Filtro por busca (título ou descrição)
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    todos = todos.filter(todo => 
+      todo.title.toLowerCase().includes(query) ||
+      (todo.description && todo.description.toLowerCase().includes(query))
+    )
+  }
+  
+  // Filtro por tags
+  if (selectedFilterTags.value.length > 0) {
+    todos = todos.filter(todo => {
+      if (!todo.tagIds || todo.tagIds.length === 0) return false
+      return selectedFilterTags.value.every(tagId => todo.tagIds.includes(tagId))
+    })
+  }
+  
+  return todos
+})
+
+// Função para alternar filtro de tag
+function toggleFilterTag(tagId) {
+  const index = selectedFilterTags.value.indexOf(tagId)
+  if (index > -1) {
+    selectedFilterTags.value.splice(index, 1)
+  } else {
+    selectedFilterTags.value.push(tagId)
+  }
+}
+
+// Função para limpar filtros
+function clearFilters() {
+  searchQuery.value = ''
+  selectedFilterTags.value = []
+}
+
 onMounted(async () => {
   await Promise.all([
     todoStore.fetchTodos(),
@@ -140,7 +233,7 @@ function initSortable() {
       onEnd: async (evt) => {
         const newOrder = Array.from(todoListRef.value.children).map(el => {
           const index = Array.from(todoListRef.value.children).indexOf(el)
-          return todoStore.sortedTodos[index]?.id
+          return filteredTodos.value[index]?.id
         }).filter(Boolean)
         
         await todoStore.updateOrder(newOrder)
