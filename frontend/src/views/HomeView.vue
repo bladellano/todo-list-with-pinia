@@ -177,7 +177,43 @@
             Lista ({{ filteredTodos.length }} {{ filteredTodos.length === 1 ? 'tarefa' : 'tarefas' }})
           </h2>
           
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 items-center">
+            <!-- Seletor de Visualização -->
+            <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <button
+                @click="setViewMode('list')"
+                :class="viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition"
+                title="Visualização em lista"
+              >
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+              </button>
+              <button
+                @click="setViewMode('grid-2')"
+                :class="viewMode === 'grid-2' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition"
+                title="Grid 2 colunas"
+              >
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                </svg>
+              </button>
+              <button
+                @click="setViewMode('grid-3')"
+                :class="viewMode === 'grid-3' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition"
+                title="Grid 3 colunas"
+              >
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                  <circle cx="12" cy="7" r="1" fill="currentColor"/>
+                  <circle cx="12" cy="17" r="1" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            
             <!-- Botão Exportar Selecionadas -->
             <button
               v-if="selectedTodos.length > 0"
@@ -216,17 +252,25 @@
           </div>
         </div>
         
-        <div v-if="filteredTodos.length === 0" class="text-center py-6 md:py-8 text-gray-500 text-sm md:text-base px-4">
+        <div v-if="filteredTodos.length === 0" class="text-center py-6 md:py-8 text-gray-500 dark:text-gray-400 text-sm md:text-base px-4">
           {{ searchQuery || selectedFilterTags.length > 0 ? 'Nenhuma tarefa encontrada com os filtros aplicados.' : 'Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!' }}
         </div>
         
-        <div ref="todoListRef" class="space-y-2 md:space-y-3">
+        <div 
+          ref="todoListRef" 
+          :class="{
+            'space-y-2 md:space-y-3': viewMode === 'list',
+            'grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4': viewMode === 'grid-2',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4': viewMode === 'grid-3'
+          }"
+        >
           <TodoItem
             v-for="todo in filteredTodos"
             :key="todo.id"
             :todo="todo"
             :tags="getTodoTags(todo)"
             :selected="selectedTodos.includes(todo.id)"
+            :view-mode="viewMode"
             @edit="editTodo"
             @delete="deleteTodo"
             @toggle-done="toggleDone"
@@ -288,6 +332,15 @@ const selectedSuggestionIndex = ref(-1)
 
 // Estado para melhorar texto com IA
 const isImprovingText = ref(false)
+
+// Estado do modo de visualização (lista, grid-2, grid-3)
+const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
+
+// Função para alterar modo de visualização
+function setViewMode(mode) {
+  viewMode.value = mode
+  localStorage.setItem('todoViewMode', mode)
+}
 
 // Computed para sugestões filtradas
 const filteredSuggestions = computed(() => {
@@ -433,9 +486,11 @@ onMounted(async () => {
   initSortable()
 })
 
+let sortableInstance = null
+
 function initSortable() {
-  if (todoListRef.value) {
-    Sortable.create(todoListRef.value, {
+  if (todoListRef.value && viewMode.value === 'list') {
+    sortableInstance = Sortable.create(todoListRef.value, {
       animation: 150,
       handle: '.drag-handle',
       onEnd: async (evt) => {
@@ -449,6 +504,27 @@ function initSortable() {
     })
   }
 }
+
+function destroySortable() {
+  if (sortableInstance) {
+    sortableInstance.destroy()
+    sortableInstance = null
+  }
+}
+
+// Reinicializar sortable quando viewMode mudar
+function updateSortable() {
+  destroySortable()
+  if (viewMode.value === 'list') {
+    nextTick(() => initSortable())
+  }
+}
+
+// Watch para recriar sortable quando viewMode mudar
+import { watch } from 'vue'
+watch(viewMode, () => {
+  updateSortable()
+})
 
 function toggleTag(tagId) {
   const index = newTodo.value.tagIds.indexOf(tagId)

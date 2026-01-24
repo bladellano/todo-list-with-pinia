@@ -8,8 +8,8 @@
     }"
   >
     <div class="flex items-start space-x-2 md:space-x-3">
-      <!-- Drag handle -->
-      <div class="drag-handle cursor-move pt-1 flex-shrink-0 hidden md:block">
+      <!-- Drag handle (apenas em modo lista) -->
+      <div v-if="viewMode === 'list'" class="drag-handle cursor-move pt-1 flex-shrink-0 hidden md:block">
         <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
         </svg>
@@ -181,6 +181,10 @@ const props = defineProps({
   isArchived: {
     type: Boolean,
     default: false
+  },
+  viewMode: {
+    type: String,
+    default: 'list'
   }
 })
 
