@@ -163,6 +163,7 @@
             @toggle-done="toggleDone"
             @toggle-select="toggleSelectTodo"
             @toggle-pin="togglePin"
+            @update-title="updateTodoTitle"
           />
         </div>
       </div>
@@ -340,6 +341,10 @@ async function togglePin(todoId) {
   if (todo) {
     await todoStore.updateTodo(todoId, { pinned: !todo.pinned })
   }
+}
+
+async function updateTodoTitle(todoId, newTitle) {
+  await todoStore.updateTodo(todoId, { title: newTitle })
 }
 
 function exportSelectedAsTxt() {

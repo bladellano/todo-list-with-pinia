@@ -29,11 +29,24 @@
       <!-- Conteúdo -->
       <div class="flex-1 min-w-0">
         <h3
-          class="font-semibold text-gray-800 text-sm md:text-base break-words"
+          v-if="!isEditingTitle"
+          @dblclick="startEditingTitle"
+          class="font-semibold text-gray-800 text-sm md:text-base break-words cursor-text"
           :class="{ 'line-through': todo.done }"
+          title="Clique duas vezes para editar"
         >
           {{ todo.title }}
         </h3>
+        
+        <input
+          v-else
+          v-model="editedTitle"
+          @blur="saveTitle"
+          @keyup.enter="saveTitle"
+          @keyup.esc="cancelEdit"
+          class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autofocus
+        />
         
         <p
           v-if="todo.description"
@@ -119,9 +132,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { getTagColor } from '../utils/colors'
 
-defineProps({
+const props = defineProps({
   todo: {
     type: Object,
     required: true
@@ -136,7 +150,27 @@ defineProps({
   }
 })
 
-defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin'])
+const emit = defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin', 'update-title'])
+
+const isEditingTitle = ref(false)
+const editedTitle = ref('')
+
+function startEditingTitle() {
+  isEditingTitle.value = true
+  editedTitle.value = props.todo.title
+}
+
+function saveTitle() {
+  if (editedTitle.value.trim() && editedTitle.value !== props.todo.title) {
+    emit('update-title', props.todo.id, editedTitle.value.trim())
+  }
+  isEditingTitle.value = false
+}
+
+function cancelEdit() {
+  isEditingTitle.value = false
+  editedTitle.value = ''
+}
 
 function formatDate(dateString) {
   const date = new Date(dateString)
