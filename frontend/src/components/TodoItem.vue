@@ -1,16 +1,16 @@
 <template>
   <div
-    class="bg-white border border-gray-200 rounded-lg p-3 md:p-4 hover:shadow-md transition"
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all"
     :class="{ 
       'opacity-60': todo.done,
-      'ring-2 ring-blue-500': selected,
-      'border-yellow-400 border-2': todo.pinned
+      'ring-2 ring-blue-500 dark:ring-blue-400': selected,
+      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned
     }"
   >
     <div class="flex items-start space-x-2 md:space-x-3">
       <!-- Drag handle -->
       <div class="drag-handle cursor-move pt-1 flex-shrink-0 hidden md:block">
-        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
         </svg>
       </div>
@@ -101,7 +101,7 @@
             <h3
               v-if="!isEditingTitle"
               @dblclick="startEditingTitle"
-              class="font-semibold text-gray-800 text-sm md:text-base break-words cursor-text"
+              class="font-semibold text-gray-800 dark:text-gray-100 text-sm md:text-base break-words cursor-text"
               :class="{ 'line-through': todo.done }"
               title="Clique duas vezes para editar"
             >
@@ -114,7 +114,7 @@
               @blur="saveTitle"
               @keyup.enter="saveTitle"
               @keyup.esc="cancelEdit"
-              class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               autofocus
             />
           </div>
@@ -133,7 +133,7 @@
         
         <p
           v-if="todo.description"
-          class="text-xs md:text-sm text-gray-600 mt-1 break-words"
+          class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1 break-words"
           :class="{ 'line-through': todo.done }"
         >
           {{ todo.description }}
