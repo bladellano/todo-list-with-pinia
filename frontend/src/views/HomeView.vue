@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">Minhas Tarefas</h1>
+    <div class="max-w-4xl mx-auto px-4 md:px-0">
+      <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">Minhas Tarefas</h1>
         
         <!-- Formulário para adicionar tarefa -->
         <form @submit.prevent="handleAddTodo" class="space-y-4">
@@ -12,7 +12,7 @@
               type="text"
               placeholder="Digite uma nova tarefa..."
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
@@ -21,22 +21,22 @@
               v-model="newTodo.description"
               placeholder="Descrição (opcional)"
               rows="2"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
-          <div class="flex items-center space-x-2">
-            <label class="text-sm font-medium text-gray-700">Tags:</label>
-            <div class="flex flex-wrap gap-2">
+          <div class="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-2">
+            <label class="text-xs md:text-sm font-medium text-gray-700">Tags:</label>
+            <div class="flex flex-wrap gap-1.5 md:gap-2">
               <button
                 v-for="tag in tagStore.tags"
                 :key="tag.id"
                 type="button"
                 @click="toggleTag(tag.id)"
-                class="px-3 py-1 rounded-full text-sm transition"
+                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
                 :class="newTodo.tagIds.includes(tag.id) 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+                  ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
+                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
               >
                 {{ tag.name }}
               </button>
@@ -45,7 +45,7 @@
           
           <button
             type="submit"
-            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm md:text-base font-medium"
           >
             Adicionar Tarefa
           </button>
@@ -53,37 +53,37 @@
       </div>
       
       <!-- Filtros -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
+      <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6">
+        <h2 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Filtros</h2>
         
         <!-- Campo de busca -->
-        <div class="mb-4">
+        <div class="mb-3 md:mb-4">
           <div class="relative">
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Buscar por título ou descrição..."
-              class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 md:px-4 py-2 pl-9 md:pl-10 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="absolute left-2.5 md:left-3 top-2.5 w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
         </div>
         
         <!-- Filtro por tags -->
-        <div v-if="tagStore.tags.length > 0" class="mb-4">
-          <label class="text-sm font-medium text-gray-700 mb-2 block">Filtrar por tags:</label>
-          <div class="flex flex-wrap gap-2">
+        <div v-if="tagStore.tags.length > 0" class="mb-3 md:mb-4">
+          <label class="text-xs md:text-sm font-medium text-gray-700 mb-2 block">Filtrar por tags:</label>
+          <div class="flex flex-wrap gap-1.5 md:gap-2">
             <button
               v-for="tag in tagStore.tags"
               :key="tag.id"
               type="button"
               @click="toggleFilterTag(tag.id)"
-              class="px-3 py-1 rounded-full text-sm transition"
+              class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
               :class="selectedFilterTags.includes(tag.id) 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+                ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
+                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
             >
               {{ tag.name }}
             </button>
@@ -102,55 +102,56 @@
       </div>
       
       <!-- Lista de tarefas -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-gray-800">
+      <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-3 md:space-y-0">
+          <h2 class="text-lg md:text-xl font-semibold text-gray-800">
             Lista ({{ filteredTodos.length }} {{ filteredTodos.length === 1 ? 'tarefa' : 'tarefas' }})
           </h2>
           
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <!-- Botão Exportar Selecionadas -->
             <button
               v-if="selectedTodos.length > 0"
               @click="exportSelectedAsTxt"
-              class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs md:text-sm"
               title="Exportar tarefas selecionadas como TXT"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              <span>Exportar ({{ selectedTodos.length }})</span>
+              <span class="hidden sm:inline">Exportar ({{ selectedTodos.length }})</span>
+              <span class="sm:hidden">({{ selectedTodos.length }})</span>
             </button>
             
             <button
               @click="importData"
-              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs md:text-sm"
               title="Importar backup dos dados"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
               </svg>
-              <span>Importar</span>
+              <span class="hidden sm:inline">Importar</span>
             </button>
             
             <button
               @click="exportData"
-              class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs md:text-sm"
               title="Exportar backup dos dados"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              <span>Exportar</span>
+              <span class="hidden sm:inline">Exportar</span>
             </button>
           </div>
         </div>
         
-        <div v-if="filteredTodos.length === 0" class="text-center py-8 text-gray-500">
+        <div v-if="filteredTodos.length === 0" class="text-center py-6 md:py-8 text-gray-500 text-sm md:text-base px-4">
           {{ searchQuery || selectedFilterTags.length > 0 ? 'Nenhuma tarefa encontrada com os filtros aplicados.' : 'Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!' }}
         </div>
         
-        <div ref="todoListRef" class="space-y-3">
+        <div ref="todoListRef" class="space-y-2 md:space-y-3">
           <TodoItem
             v-for="todo in filteredTodos"
             :key="todo.id"
@@ -182,6 +183,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 import { useTagStore } from '../stores/tag'
+import { getTagColor } from '../utils/colors'
 import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
