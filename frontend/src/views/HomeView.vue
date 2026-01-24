@@ -351,19 +351,9 @@ function exportSelectedAsTxt() {
   let content = '=== LISTA DE TAREFAS ===\n\n'
   
   selected.forEach((todo, index) => {
-    const tags = getTodoTags(todo).map(t => t.name).join(', ')
-    const status = todo.done ? '[✓]' : '[ ]'
     const pinned = todo.pinned ? '📌 ' : ''
     
-    content += `${index + 1}. ${pinned}${status} ${todo.title}\n`
-    
-    if (todo.description) {
-      content += `   Descrição: ${todo.description}\n`
-    }
-    
-    if (tags) {
-      content += `   Tags: ${tags}\n`
-    }
+    content += `${index + 1}. ${pinned}${todo.title}\n`
     
     if (todo.done && todo.completedAt) {
       const date = new Date(todo.completedAt).toLocaleString('pt-BR')
