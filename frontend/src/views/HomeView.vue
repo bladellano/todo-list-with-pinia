@@ -6,14 +6,42 @@
         
         <!-- Formulário para adicionar tarefa -->
         <form @submit.prevent="handleAddTodo" class="space-y-4">
-          <div>
+          <div class="relative">
             <input
+              ref="titleInputRef"
               v-model="newTodo.title"
               type="text"
               placeholder="Digite uma nova tarefa..."
               required
+              @input="handleTitleInput"
+              @focus="showSuggestions = true"
+              @blur="handleBlur"
+              @keydown.down.prevent="navigateSuggestions(1)"
+              @keydown.up.prevent="navigateSuggestions(-1)"
+              @keydown.enter.prevent="selectCurrentSuggestion"
+              @keydown.esc="closeSuggestions"
               class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+            
+            <!-- Dropdown de sugestões -->
+            <div
+              v-if="showSuggestions && filteredSuggestions.length > 0"
+              class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            >
+              <button
+                v-for="(suggestion, index) in filteredSuggestions"
+                :key="suggestion.id"
+                type="button"
+                @mousedown.prevent="selectSuggestion(suggestion.title)"
+                class="w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-blue-50 transition border-b border-gray-100 last:border-b-0"
+                :class="{ 'bg-blue-100': index === selectedSuggestionIndex }"
+              >
+                <div class="font-medium text-gray-800">{{ suggestion.title }}</div>
+                <div v-if="suggestion.description" class="text-gray-500 text-[10px] md:text-xs truncate mt-0.5">
+                  {{ suggestion.description }}
+                </div>
+              </button>
+            </div>
           </div>
           
           <div>
@@ -203,6 +231,7 @@ const newTodo = ref({
 
 const editingTodo = ref(null)
 const todoListRef = ref(null)
+const titleInputRef = ref(null)
 
 // Estados de filtro
 const searchQuery = ref('')
@@ -210,6 +239,23 @@ const selectedFilterTags = ref([])
 
 // Estado de seleção múltipla
 const selectedTodos = ref([])
+
+// Estados de autocomplete
+const showSuggestions = ref(false)
+const selectedSuggestionIndex = ref(-1)
+
+// Computed para sugestões filtradas
+const filteredSuggestions = computed(() => {
+  const input = newTodo.value.title.trim().toLowerCase()
+  
+  // Não mostrar sugestões se input vazio ou muito curto
+  if (input.length < 2) return []
+  
+  // Filtrar todos que contenham o texto digitado (exceto arquivados)
+  return todoStore.todos
+    .filter(todo => !todo.archived && todo.title.toLowerCase().includes(input))
+    .slice(0, 5) // Limitar a 5 sugestões
+})
 
 // Computed para filtrar tarefas
 const filteredTodos = computed(() => {
@@ -252,6 +298,55 @@ function toggleFilterTag(tagId) {
 function clearFilters() {
   searchQuery.value = ''
   selectedFilterTags.value = []
+}
+
+// Funções de autocomplete
+function handleTitleInput() {
+  showSuggestions.value = true
+  selectedSuggestionIndex.value = -1
+}
+
+function handleBlur() {
+  // Pequeno delay para permitir o click na sugestão
+  setTimeout(() => {
+    showSuggestions.value = false
+    selectedSuggestionIndex.value = -1
+  }, 200)
+}
+
+function navigateSuggestions(direction) {
+  if (filteredSuggestions.value.length === 0) return
+  
+  const newIndex = selectedSuggestionIndex.value + direction
+  
+  if (newIndex < -1) {
+    selectedSuggestionIndex.value = filteredSuggestions.value.length - 1
+  } else if (newIndex >= filteredSuggestions.value.length) {
+    selectedSuggestionIndex.value = -1
+  } else {
+    selectedSuggestionIndex.value = newIndex
+  }
+}
+
+function selectCurrentSuggestion() {
+  if (selectedSuggestionIndex.value >= 0 && selectedSuggestionIndex.value < filteredSuggestions.value.length) {
+    selectSuggestion(filteredSuggestions.value[selectedSuggestionIndex.value].title)
+  } else {
+    // Se nenhuma sugestão selecionada, submete o form
+    handleAddTodo()
+  }
+}
+
+function selectSuggestion(title) {
+  newTodo.value.title = title
+  showSuggestions.value = false
+  selectedSuggestionIndex.value = -1
+  titleInputRef.value?.focus()
+}
+
+function closeSuggestions() {
+  showSuggestions.value = false
+  selectedSuggestionIndex.value = -1
 }
 
 onMounted(async () => {
