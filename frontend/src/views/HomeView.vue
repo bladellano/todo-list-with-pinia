@@ -498,11 +498,21 @@ function exportSelectedAsTxt() {
   
   content += `\n--- Exportado em ${new Date().toLocaleString('pt-BR')} ---`
   
+  // Gerar nome do arquivo com formato dia_hora_min_seg
+  const now = new Date()
+  const day = String(now.getDate()).padStart(2, '0')
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const year = now.getFullYear()
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  const filename = `tarefas-${day}-${month}-${year}_${hours}h${minutes}min${seconds}s.txt`
+  
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `tarefas-${new Date().toISOString().split('T')[0]}.txt`
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   window.URL.revokeObjectURL(url)
@@ -522,10 +532,21 @@ async function exportData() {
     }
     
     const blob = await response.blob()
+    
+    // Gerar nome do arquivo com formato dia_hora_min_seg
+    const now = new Date()
+    const day = String(now.getDate()).padStart(2, '0')
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const year = now.getFullYear()
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+    const filename = `todo-backup-${day}-${month}-${year}_${hours}h${minutes}min${seconds}s.json`
+    
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.download = filename
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
