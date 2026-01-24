@@ -17,8 +17,8 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Data (não versionar dados)
-backend/data.json
+# Data (não versionar dados - volume Docker em produção)
+backend/data/
 
 # Build
 dist/
