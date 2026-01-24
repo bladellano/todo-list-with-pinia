@@ -77,6 +77,20 @@ app.post('/api/todos', async (req, res) => {
   res.json(newTodo);
 });
 
+// Rotas de ordem ANTES das rotas com :id
+app.get('/api/todos/order', async (req, res) => {
+  const data = await readData();
+  res.json(data.todoOrder || []);
+});
+
+app.put('/api/todos/order', async (req, res) => {
+  const data = await readData();
+  data.todoOrder = req.body.order;
+  await writeData(data);
+  res.json({ success: true });
+});
+
+// Rotas com :id DEPOIS
 app.put('/api/todos/:id', async (req, res) => {
   const data = await readData();
   const index = data.todos.findIndex(t => t.id === parseInt(req.params.id));
@@ -95,19 +109,6 @@ app.delete('/api/todos/:id', async (req, res) => {
   data.todos = data.todos.filter(t => t.id !== parseInt(req.params.id));
   await writeData(data);
   res.json({ success: true });
-});
-
-// Atualizar ordem das tarefas
-app.put('/api/todos/order', async (req, res) => {
-  const data = await readData();
-  data.todoOrder = req.body.order;
-  await writeData(data);
-  res.json({ success: true });
-});
-
-app.get('/api/todos/order', async (req, res) => {
-  const data = await readData();
-  res.json(data.todoOrder || []);
 });
 
 // CRUD de Tags

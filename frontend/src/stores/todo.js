@@ -8,28 +8,36 @@ export const useTodoStore = defineStore('todo', () => {
   const customOrder = ref([])
 
   const sortedTodos = computed(() => {
+    let result = []
+    
     if (customOrder.value.length === 0) {
       // Ordenação padrão por data de criação (DESC)
-      return [...todos.value].sort((a, b) => 
+      result = [...todos.value].sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       )
+    } else {
+      // Ordenação personalizada
+      const orderedTodos = []
+      const todoMap = new Map(todos.value.map(t => [t.id, t]))
+      
+      customOrder.value.forEach(id => {
+        if (todoMap.has(id)) {
+          orderedTodos.push(todoMap.get(id))
+          todoMap.delete(id)
+        }
+      })
+      
+      // Adicionar todos que não estão na ordem personalizada
+      todoMap.forEach(todo => orderedTodos.push(todo))
+      
+      result = orderedTodos
     }
     
-    // Ordenação personalizada
-    const orderedTodos = []
-    const todoMap = new Map(todos.value.map(t => [t.id, t]))
+    // Separar pinned e não pinned, mantendo ordem
+    const pinned = result.filter(t => t.pinned)
+    const notPinned = result.filter(t => !t.pinned)
     
-    customOrder.value.forEach(id => {
-      if (todoMap.has(id)) {
-        orderedTodos.push(todoMap.get(id))
-        todoMap.delete(id)
-      }
-    })
-    
-    // Adicionar todos que não estão na ordem personalizada
-    todoMap.forEach(todo => orderedTodos.push(todo))
-    
-    return orderedTodos
+    return [...pinned, ...notPinned]
   })
 
   async function fetchTodos() {

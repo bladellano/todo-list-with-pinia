@@ -1,23 +1,28 @@
 <template>
   <div
-    class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-move"
-    :class="{ 'opacity-60': todo.done }"
+    class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+    :class="{ 
+      'opacity-60': todo.done,
+      'ring-2 ring-blue-500': selected,
+      'border-yellow-400 border-2': todo.pinned
+    }"
   >
     <div class="flex items-start space-x-3">
       <!-- Drag handle -->
-      <div class="drag-handle cursor-move pt-1">
+      <div class="drag-handle cursor-move pt-1 flex-shrink-0">
         <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
         </svg>
       </div>
       
-      <!-- Checkbox -->
-      <div class="pt-1">
+      <!-- Checkbox de seleção -->
+      <div class="pt-1 flex-shrink-0">
         <input
           type="checkbox"
-          :checked="todo.done"
-          @change="$emit('toggle-done', todo)"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+          :checked="selected"
+          @change.stop="$emit('toggle-select', todo.id)"
+          class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+          title="Selecionar para exportar"
         />
       </div>
       
@@ -57,7 +62,37 @@
       </div>
       
       <!-- Ações -->
-      <div class="flex space-x-2">
+      <div class="flex flex-col space-y-1 flex-shrink-0">
+        <!-- Botão Done/Undone -->
+        <button
+          @click="$emit('toggle-done', todo)"
+          class="p-2 rounded transition"
+          :class="todo.done 
+            ? 'text-green-600 hover:bg-green-50' 
+            : 'text-gray-400 hover:bg-gray-50'"
+          :title="todo.done ? 'Marcar como pendente' : 'Marcar como concluída'"
+        >
+          <svg v-if="todo.done" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </button>
+        
+        <button
+          @click="$emit('toggle-pin', todo.id)"
+          class="p-2 rounded transition"
+          :class="todo.pinned 
+            ? 'text-yellow-600 hover:bg-yellow-50' 
+            : 'text-gray-400 hover:bg-gray-50'"
+          :title="todo.pinned ? 'Desafixar' : 'Fixar no topo'"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L11 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c-.25.78.409 1.565 1.225 1.466L8 14l.823 3.288c.27.936 1.567 1.036 2.022.251l.802-1.365 1.61-.968-3.126-3.126a1 1 0 01-.294-.707V8.274a1.99 1.99 0 00-1.003-.18 1.99 1.99 0 00-1.003.18z"></path>
+          </svg>
+        </button>
+        
         <button
           @click="$emit('edit', todo)"
           class="p-2 text-blue-600 hover:bg-blue-50 rounded transition"
@@ -91,10 +126,14 @@ defineProps({
   tags: {
     type: Array,
     default: () => []
+  },
+  selected: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['edit', 'delete', 'toggle-done'])
+defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin'])
 
 function formatDate(dateString) {
   const date = new Date(dateString)

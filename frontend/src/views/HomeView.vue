@@ -109,6 +109,19 @@
           </h2>
           
           <div class="flex gap-2">
+            <!-- Botão Exportar Selecionadas -->
+            <button
+              v-if="selectedTodos.length > 0"
+              @click="exportSelectedAsTxt"
+              class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              title="Exportar tarefas selecionadas como TXT"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Exportar ({{ selectedTodos.length }})</span>
+            </button>
+            
             <button
               @click="importData"
               class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -143,9 +156,12 @@
             :key="todo.id"
             :todo="todo"
             :tags="getTodoTags(todo)"
+            :selected="selectedTodos.includes(todo.id)"
             @edit="editTodo"
             @delete="deleteTodo"
             @toggle-done="toggleDone"
+            @toggle-select="toggleSelectTodo"
+            @toggle-pin="togglePin"
           />
         </div>
       </div>
@@ -187,6 +203,9 @@ const todoListRef = ref(null)
 // Estados de filtro
 const searchQuery = ref('')
 const selectedFilterTags = ref([])
+
+// Estado de seleção múltipla
+const selectedTodos = ref([])
 
 // Computed para filtrar tarefas
 const filteredTodos = computed(() => {
@@ -303,6 +322,71 @@ async function deleteTodo(id) {
 
 async function toggleDone(todo) {
   await todoStore.updateTodo(todo.id, { done: !todo.done })
+}
+
+function toggleSelectTodo(todoId) {
+  const index = selectedTodos.value.indexOf(todoId)
+  if (index > -1) {
+    selectedTodos.value.splice(index, 1)
+  } else {
+    selectedTodos.value.push(todoId)
+  }
+}
+
+async function togglePin(todoId) {
+  const todo = todoStore.todos.find(t => t.id === todoId)
+  if (todo) {
+    await todoStore.updateTodo(todoId, { pinned: !todo.pinned })
+  }
+}
+
+function exportSelectedAsTxt() {
+  const selected = todoStore.todos.filter(t => selectedTodos.value.includes(t.id))
+  
+  if (selected.length === 0) {
+    alert('Nenhuma tarefa selecionada')
+    return
+  }
+  
+  let content = '=== LISTA DE TAREFAS ===\n\n'
+  
+  selected.forEach((todo, index) => {
+    const tags = getTodoTags(todo).map(t => t.name).join(', ')
+    const status = todo.done ? '[✓]' : '[ ]'
+    const pinned = todo.pinned ? '📌 ' : ''
+    
+    content += `${index + 1}. ${pinned}${status} ${todo.title}\n`
+    
+    if (todo.description) {
+      content += `   Descrição: ${todo.description}\n`
+    }
+    
+    if (tags) {
+      content += `   Tags: ${tags}\n`
+    }
+    
+    if (todo.done && todo.completedAt) {
+      const date = new Date(todo.completedAt).toLocaleString('pt-BR')
+      content += `   Concluída em: ${date}\n`
+    }
+    
+    content += '\n'
+  })
+  
+  content += `\n--- Exportado em ${new Date().toLocaleString('pt-BR')} ---`
+  
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `tarefas-${new Date().toISOString().split('T')[0]}.txt`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+  
+  // Limpar seleção após exportar
+  selectedTodos.value = []
 }
 
 async function exportData() {
