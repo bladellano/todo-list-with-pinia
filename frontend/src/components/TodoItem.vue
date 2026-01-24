@@ -1,11 +1,12 @@
 <template>
   <div
-    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all"
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all cursor-pointer"
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
       'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned
     }"
+    @click="handleCardClick"
   >
     <div class="flex items-start space-x-2 md:space-x-3">
       <!-- Drag handle (apenas em modo lista) -->
@@ -188,10 +189,24 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin', 'toggle-archive', 'update-title'])
+const emit = defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin', 'toggle-archive', 'update-title', 'view'])
 
 const isEditingTitle = ref(false)
 const editedTitle = ref('')
+
+function handleCardClick(event) {
+  // Não abrir modal se clicar em botões, checkbox, drag handle ou input de edição
+  const clickedElement = event.target
+  const isInteractiveElement = clickedElement.closest('button') || 
+                                clickedElement.closest('input') || 
+                                clickedElement.closest('.drag-handle') ||
+                                clickedElement.tagName === 'BUTTON' ||
+                                clickedElement.tagName === 'INPUT'
+  
+  if (!isInteractiveElement && !isEditingTitle.value) {
+    emit('view', props.todo)
+  }
+}
 
 function startEditingTitle() {
   isEditingTitle.value = true

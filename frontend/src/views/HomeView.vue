@@ -271,6 +271,7 @@
             :tags="getTodoTags(todo)"
             :selected="selectedTodos.includes(todo.id)"
             :view-mode="viewMode"
+            @view="viewTodo"
             @edit="editTodo"
             @delete="deleteTodo"
             @toggle-done="toggleDone"
@@ -282,6 +283,15 @@
         </div>
       </div>
     </div>
+    
+    <!-- Modal de visualização -->
+    <TodoViewModal
+      v-if="viewingTodo"
+      :todo="viewingTodo"
+      :tags="getTodoTags(viewingTodo)"
+      @close="closeViewModal"
+      @edit="editTodo"
+    />
     
     <!-- Modal de edição -->
     <TodoEditModal
@@ -302,6 +312,7 @@ import { getTagColor } from '../utils/colors'
 import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
+import TodoViewModal from '../components/TodoViewModal.vue'
 import Sortable from 'sortablejs'
 
 const todoStore = useTodoStore()
@@ -315,6 +326,7 @@ const newTodo = ref({
 })
 
 const editingTodo = ref(null)
+const viewingTodo = ref(null)
 const todoListRef = ref(null)
 const titleInputRef = ref(null)
 
@@ -553,7 +565,16 @@ function getTodoTags(todo) {
   return tagStore.tags.filter(tag => todo.tagIds.includes(tag.id))
 }
 
+function viewTodo(todo) {
+  viewingTodo.value = todo
+}
+
+function closeViewModal() {
+  viewingTodo.value = null
+}
+
 function editTodo(todo) {
+  viewingTodo.value = null // Fecha modal de visualização se estiver aberto
   editingTodo.value = { ...todo }
 }
 
