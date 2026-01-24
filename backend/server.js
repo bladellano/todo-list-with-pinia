@@ -4,6 +4,7 @@ import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import OpenAI from 'openai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +12,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+// Configurar cliente OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 app.use(cors());
 app.use(express.json());
@@ -205,8 +211,59 @@ app.post('/api/import', async (req, res) => {
   }
 });
 
+// Endpoint de IA para melhorar texto
+app.post('/api/ai/improve-text', async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Texto não pode estar vazio' 
+      });
+    }
+    
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your-openai-api-key-here') {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'OpenAI API key não configurada' 
+      });
+    }
+    
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um assistente que melhora textos em português. Corrija erros de ortografia, gramática e concordância. Mantenha o significado original e seja conciso. Retorne apenas o texto melhorado, sem explicações.'
+        },
+        {
+          role: 'user',
+          content: `Melhore o texto e seu entendimento: "${text}"`
+        }
+      ],
+      max_tokens: 100,
+      temperature: 0.3
+    });
+    
+    const improvedText = completion.choices[0]?.message?.content?.trim() || text;
+    
+    res.json({ 
+      success: true, 
+      original: text,
+      improved: improvedText
+    });
+  } catch (error) {
+    console.error('Erro ao melhorar texto:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao processar texto com IA. Verifique sua API key.' 
+    });
+  }
+});
+
 // Iniciar servidor
 await initDataFile();
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  console.log(`🚀 @todo Servidor rodando em http://localhost:${PORT}`);
 });

@@ -6,42 +6,64 @@
         
         <!-- Formulário para adicionar tarefa -->
         <form @submit.prevent="handleAddTodo" class="space-y-4">
-          <div class="relative">
-            <input
-              ref="titleInputRef"
-              v-model="newTodo.title"
-              type="text"
-              placeholder="Digite uma nova tarefa..."
-              required
-              @input="handleTitleInput"
-              @focus="showSuggestions = true"
-              @blur="handleBlur"
-              @keydown.down.prevent="navigateSuggestions(1)"
-              @keydown.up.prevent="navigateSuggestions(-1)"
-              @keydown.enter.prevent="selectCurrentSuggestion"
-              @keydown.esc="closeSuggestions"
-              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
-            />
-            
-            <!-- Dropdown de sugestões -->
-            <div
-              v-if="showSuggestions && filteredSuggestions.length > 0"
-              class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto transition-colors"
-            >
-              <button
-                v-for="(suggestion, index) in filteredSuggestions"
-                :key="suggestion.id"
-                type="button"
-                @mousedown.prevent="selectSuggestion(suggestion.title)"
-                class="w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-blue-50 transition border-b border-gray-100 last:border-b-0"
-                :class="{ 'bg-blue-100': index === selectedSuggestionIndex }"
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <input
+                ref="titleInputRef"
+                v-model="newTodo.title"
+                type="text"
+                placeholder="Digite uma nova tarefa..."
+                required
+                @input="handleTitleInput"
+                @focus="showSuggestions = true"
+                @blur="handleBlur"
+                @keydown.down.prevent="navigateSuggestions(1)"
+                @keydown.up.prevent="navigateSuggestions(-1)"
+                @keydown.enter.prevent="selectCurrentSuggestion"
+                @keydown.esc="closeSuggestions"
+                class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+              />
+              
+              <!-- Dropdown de sugestões -->
+              <div
+                v-if="showSuggestions && filteredSuggestions.length > 0"
+                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto transition-colors"
               >
-                <div class="font-medium text-gray-800">{{ suggestion.title }}</div>
-                <div v-if="suggestion.description" class="text-gray-500 text-[10px] md:text-xs truncate mt-0.5">
-                  {{ suggestion.description }}
-                </div>
-              </button>
+                <button
+                  v-for="(suggestion, index) in filteredSuggestions"
+                  :key="suggestion.id"
+                  type="button"
+                  @mousedown.prevent="selectSuggestion(suggestion.title)"
+                  class="w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-blue-50 transition border-b border-gray-100 last:border-b-0"
+                  :class="{ 'bg-blue-100': index === selectedSuggestionIndex }"
+                >
+                  <div class="font-medium text-gray-800">{{ suggestion.title }}</div>
+                  <div v-if="suggestion.description" class="text-gray-500 text-[10px] md:text-xs truncate mt-0.5">
+                    {{ suggestion.description }}
+                  </div>
+                </button>
+              </div>
             </div>
+            
+            <!-- Botão Melhorar com IA -->
+            <button
+              type="button"
+              @click="improveText"
+              :disabled="!newTodo.title.trim() || isImprovingText"
+              class="p-2 rounded-lg transition flex items-center justify-center shrink-0"
+              :class="!newTodo.title.trim() || isImprovingText 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-yellow-500 text-white hover:bg-yellow-600'"
+              title="Melhorar texto com IA"
+            >
+              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+              </svg>
+              <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
           </div>
           
           <div>
@@ -264,6 +286,9 @@ const selectedTodos = ref([])
 const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(-1)
 
+// Estado para melhorar texto com IA
+const isImprovingText = ref(false)
+
 // Computed para sugestões filtradas
 const filteredSuggestions = computed(() => {
   const input = newTodo.value.title.trim().toLowerCase()
@@ -367,6 +392,35 @@ function selectSuggestion(title) {
 function closeSuggestions() {
   showSuggestions.value = false
   selectedSuggestionIndex.value = -1
+}
+
+// Função para melhorar texto com IA
+async function improveText() {
+  if (!newTodo.value.title.trim() || isImprovingText.value) return
+  
+  isImprovingText.value = true
+  
+  try {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${API_URL}/api/ai/improve-text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: newTodo.value.title })
+    })
+    
+    const result = await response.json()
+    
+    if (result.success && result.improved) {
+      newTodo.value.title = result.improved
+    } else {
+      alert(result.message || 'Erro ao melhorar texto')
+    }
+  } catch (error) {
+    console.error('Erro ao melhorar texto:', error)
+    alert('Erro ao conectar com o servidor. Verifique se o backend está rodando.')
+  } finally {
+    isImprovingText.value = false
+  }
 }
 
 onMounted(async () => {
