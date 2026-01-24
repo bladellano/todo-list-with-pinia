@@ -163,6 +163,7 @@
             @toggle-done="toggleDone"
             @toggle-select="toggleSelectTodo"
             @toggle-pin="togglePin"
+            @toggle-archive="toggleArchive"
             @update-title="updateTodoTitle"
           />
         </div>
@@ -213,6 +214,9 @@ const selectedTodos = ref([])
 // Computed para filtrar tarefas
 const filteredTodos = computed(() => {
   let todos = todoStore.sortedTodos
+  
+  // Filtrar tarefas não arquivadas
+  todos = todos.filter(todo => !todo.archived)
   
   // Filtro por busca (título ou descrição)
   if (searchQuery.value.trim()) {
@@ -340,6 +344,13 @@ async function togglePin(todoId) {
   const todo = todoStore.todos.find(t => t.id === todoId)
   if (todo) {
     await todoStore.updateTodo(todoId, { pinned: !todo.pinned })
+  }
+}
+
+async function toggleArchive(todoId) {
+  const todo = todoStore.todos.find(t => t.id === todoId)
+  if (todo) {
+    await todoStore.updateTodo(todoId, { archived: true })
   }
 }
 

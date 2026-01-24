@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow-lg">
+    <!-- Navbar fixo no topo -->
+    <nav class="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
       <div class="container mx-auto px-3 md:px-4">
         <div class="flex justify-between items-center h-14 md:h-16">
           <div class="flex space-x-3 md:space-x-8">
@@ -10,6 +11,14 @@
               :class="isActive('/') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
             >
               Início
+            </router-link>
+            
+            <router-link
+              to="/archived"
+              class="flex items-center px-2 md:px-3 py-2 rounded-md text-xs md:text-sm font-medium transition"
+              :class="isActive('/archived') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
+            >
+              Arquivadas
             </router-link>
             
             <router-link
@@ -36,7 +45,8 @@
       </div>
     </nav>
     
-    <main class="container mx-auto px-0 md:px-4 py-4 md:py-8">
+    <!-- Padding-top para compensar o navbar fixo -->
+    <main class="container mx-auto px-0 md:px-4 py-4 md:py-8 pt-16 md:pt-20">
       <slot />
     </main>
   </div>

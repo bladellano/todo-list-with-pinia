@@ -37,10 +37,10 @@
               :key="tag.id"
               type="button"
               @click="toggleTag(tag.id)"
-              class="px-3 py-1 rounded-full text-sm transition"
+              class="px-3 py-1 rounded-full text-sm transition border-2"
               :class="editForm.tagIds.includes(tag.id) 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+                ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
+                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
             >
               {{ tag.name }}
             </button>
@@ -56,6 +56,18 @@
           />
           <label for="done-checkbox" class="text-sm font-medium text-gray-700">
             Tarefa concluída
+          </label>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <input
+            v-model="editForm.notificable"
+            type="checkbox"
+            id="notificable-checkbox"
+            class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
+          />
+          <label for="notificable-checkbox" class="text-sm font-medium text-gray-700">
+            Habilitar notificações (n8n)
           </label>
         </div>
         
@@ -81,6 +93,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { getTagColor } from '../utils/colors'
 
 const props = defineProps({
   todo: {
@@ -100,7 +113,8 @@ const editForm = ref({
   title: props.todo.title,
   description: props.todo.description || '',
   tagIds: props.todo.tagIds || [],
-  done: props.todo.done || false
+  done: props.todo.done || false,
+  notificable: props.todo.notificable || false
 })
 
 function toggleTag(tagId) {

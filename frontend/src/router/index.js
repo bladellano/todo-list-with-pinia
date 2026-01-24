@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import TagsView from '../views/TagsView.vue'
+import ArchivedView from '../views/ArchivedView.vue'
 import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
@@ -17,6 +18,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/archived',
+      name: 'archived',
+      component: ArchivedView,
       meta: { requiresAuth: true }
     },
     {
