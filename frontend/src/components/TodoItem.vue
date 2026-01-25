@@ -195,6 +195,11 @@ const isEditingTitle = ref(false)
 const editedTitle = ref('')
 
 function handleCardClick(event) {
+  // Não abrir modal em modo lista (permitir duplo clique para edição)
+  if (props.viewMode === 'list') {
+    return
+  }
+  
   // Não abrir modal se clicar em botões, checkbox, drag handle ou input de edição
   const clickedElement = event.target
   const isInteractiveElement = clickedElement.closest('button') || 
