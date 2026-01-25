@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <div class="max-w-4xl mx-auto px-4 md:px-0">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
         <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Minhas Tarefas</h1>
         
@@ -196,9 +196,7 @@
                 class="p-1.5 rounded transition"
                 title="Grid 2 colunas"
               >
-                <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
-                </svg>
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">2</span>
               </button>
               <button
                 @click="setViewMode('grid-3')"
@@ -206,11 +204,47 @@
                 class="p-1.5 rounded transition"
                 title="Grid 3 colunas"
               >
-                <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
-                  <circle cx="12" cy="7" r="1" fill="currentColor"/>
-                  <circle cx="12" cy="17" r="1" fill="currentColor"/>
-                </svg>
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">3</span>
+              </button>
+              <button
+                @click="setViewMode('grid-4')"
+                :class="viewMode === 'grid-4' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition hidden lg:flex"
+                title="Grid 4 colunas"
+              >
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">4</span>
+              </button>
+              <button
+                @click="setViewMode('grid-5')"
+                :class="viewMode === 'grid-5' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition hidden xl:flex"
+                title="Grid 5 colunas"
+              >
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">5</span>
+              </button>
+              <button
+                @click="setViewMode('grid-6')"
+                :class="viewMode === 'grid-6' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition hidden 2xl:flex"
+                title="Grid 6 colunas"
+              >
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">6</span>
+              </button>
+              <button
+                @click="setViewMode('grid-7')"
+                :class="viewMode === 'grid-7' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition hidden 2xl:flex"
+                title="Grid 7 colunas"
+              >
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">7</span>
+              </button>
+              <button
+                @click="setViewMode('grid-8')"
+                :class="viewMode === 'grid-8' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
+                class="p-1.5 rounded transition hidden 2xl:flex"
+                title="Grid 8 colunas"
+              >
+                <span class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center">8</span>
               </button>
             </div>
             
@@ -261,7 +295,12 @@
           :class="{
             'space-y-2 md:space-y-3': viewMode === 'list',
             'grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4': viewMode === 'grid-2',
-            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4': viewMode === 'grid-3'
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4': viewMode === 'grid-3',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4': viewMode === 'grid-4',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-3': viewMode === 'grid-5',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-2 md:gap-3': viewMode === 'grid-6',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-7 gap-2': viewMode === 'grid-7',
+            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-2': viewMode === 'grid-8'
           }"
         >
           <TodoItem
