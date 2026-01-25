@@ -217,7 +217,7 @@
             <!-- Botão Exportar Selecionadas -->
             <button
               v-if="selectedTodos.length > 0"
-              @click="exportSelectedAsTxt"
+              @click="handleExportSelectedAsTxt"
               class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs md:text-sm"
               title="Exportar tarefas selecionadas como TXT"
             >
@@ -229,7 +229,7 @@
             </button>
             
             <button
-              @click="importData"
+              @click="handleImportData"
               class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs md:text-sm"
               title="Importar backup dos dados"
             >
@@ -240,7 +240,7 @@
             </button>
             
             <button
-              @click="exportData"
+              @click="handleExportData"
               class="flex items-center space-x-1.5 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs md:text-sm"
               title="Exportar backup dos dados"
             >
@@ -309,12 +309,17 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 import { useTagStore } from '../stores/tag'
 import { getTagColor } from '../utils/colors'
+import { useSuggestions } from '../composables/useSuggestions'
+import { useAI } from '../composables/useAI'
+import { useExport } from '../composables/useExport'
+import { useTodoFilters } from '../composables/useTodoFilters'
+import { useDragAndDrop } from '../composables/useDragAndDrop'
 import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
 import TodoViewModal from '../components/TodoViewModal.vue'
-import Sortable from 'sortablejs'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const todoStore = useTodoStore()
 const tagStore = useTagStore()
 
@@ -329,162 +334,66 @@ const editingTodo = ref(null)
 const viewingTodo = ref(null)
 const todoListRef = ref(null)
 const titleInputRef = ref(null)
-
-// Estados de filtro
-const searchQuery = ref('')
-const selectedFilterTags = ref([])
-const showFilters = ref(false) // Colapsado por padrão
-
-// Estado de seleção múltipla
+const showFilters = ref(false)
 const selectedTodos = ref([])
-
-// Estados de autocomplete
-const showSuggestions = ref(false)
-const selectedSuggestionIndex = ref(-1)
-
-// Estado para melhorar texto com IA
-const isImprovingText = ref(false)
-
-// Estado do modo de visualização (lista, grid-2, grid-3)
 const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
 
-// Função para alterar modo de visualização
+// Composables
+const { searchQuery, selectedFilterTags, filteredTodos, toggleFilterTag, clearFilters } = 
+  useTodoFilters(computed(() => todoStore.sortedTodos))
+
+const suggestions = useSuggestions(computed(() => todoStore.todos), computed(() => newTodo.value.title))
+const { isImprovingText, improveText: aiImproveText } = useAI()
+const { exportSelectedAsTxt, exportData, importData } = useExport()
+const { initSortable } = useDragAndDrop(
+  todoListRef, 
+  viewMode, 
+  filteredTodos, 
+  computed(() => todoStore.todos),
+  todoStore.updateOrder
+)
+
+const filteredSuggestions = suggestions.filteredSuggestions
+const showSuggestions = suggestions.showSuggestions
+const selectedSuggestionIndex = suggestions.selectedSuggestionIndex
+
 function setViewMode(mode) {
   viewMode.value = mode
   localStorage.setItem('todoViewMode', mode)
 }
 
-// Computed para sugestões filtradas
-const filteredSuggestions = computed(() => {
-  const input = newTodo.value.title.trim().toLowerCase()
-  
-  // Não mostrar sugestões se input vazio ou muito curto
-  if (input.length < 2) return []
-  
-  // Filtrar todos que contenham o texto digitado (exceto arquivados)
-  return todoStore.todos
-    .filter(todo => !todo.archived && todo.title.toLowerCase().includes(input))
-    .slice(0, 5) // Limitar a 5 sugestões
-})
-
-// Computed para filtrar tarefas
-const filteredTodos = computed(() => {
-  let todos = todoStore.sortedTodos
-  
-  // Filtrar tarefas não arquivadas
-  todos = todos.filter(todo => !todo.archived)
-  
-  // Filtro por busca (título ou descrição)
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    todos = todos.filter(todo => 
-      todo.title.toLowerCase().includes(query) ||
-      (todo.description && todo.description.toLowerCase().includes(query))
-    )
-  }
-  
-  // Filtro por tags
-  if (selectedFilterTags.value.length > 0) {
-    todos = todos.filter(todo => {
-      if (!todo.tagIds || todo.tagIds.length === 0) return false
-      return selectedFilterTags.value.every(tagId => todo.tagIds.includes(tagId))
-    })
-  }
-  
-  return todos
-})
-
-// Função para alternar filtro de tag
-function toggleFilterTag(tagId) {
-  const index = selectedFilterTags.value.indexOf(tagId)
-  if (index > -1) {
-    selectedFilterTags.value.splice(index, 1)
-  } else {
-    selectedFilterTags.value.push(tagId)
-  }
-}
-
-// Função para limpar filtros
-function clearFilters() {
-  searchQuery.value = ''
-  selectedFilterTags.value = []
-}
-
-// Funções de autocomplete
 function handleTitleInput() {
-  showSuggestions.value = true
-  selectedSuggestionIndex.value = -1
+  suggestions.handleInput()
 }
 
 function handleBlur() {
-  // Pequeno delay para permitir o click na sugestão
-  setTimeout(() => {
-    showSuggestions.value = false
-    selectedSuggestionIndex.value = -1
-  }, 200)
+  suggestions.handleBlur()
 }
 
 function navigateSuggestions(direction) {
-  if (filteredSuggestions.value.length === 0) return
-  
-  const newIndex = selectedSuggestionIndex.value + direction
-  
-  if (newIndex < -1) {
-    selectedSuggestionIndex.value = filteredSuggestions.value.length - 1
-  } else if (newIndex >= filteredSuggestions.value.length) {
-    selectedSuggestionIndex.value = -1
-  } else {
-    selectedSuggestionIndex.value = newIndex
-  }
+  suggestions.navigateSuggestions(direction)
 }
 
 function selectCurrentSuggestion() {
-  if (selectedSuggestionIndex.value >= 0 && selectedSuggestionIndex.value < filteredSuggestions.value.length) {
-    selectSuggestion(filteredSuggestions.value[selectedSuggestionIndex.value].title)
-  } else {
-    // Se nenhuma sugestão selecionada, submete o form
-    handleAddTodo()
+  const title = suggestions.selectCurrentSuggestion(handleAddTodo)
+  if (title) {
+    newTodo.value.title = title
+    titleInputRef.value?.focus()
   }
 }
 
 function selectSuggestion(title) {
-  newTodo.value.title = title
-  showSuggestions.value = false
-  selectedSuggestionIndex.value = -1
-  titleInputRef.value?.focus()
+  suggestions.selectSuggestion(title, titleInputRef.value)
 }
 
 function closeSuggestions() {
-  showSuggestions.value = false
-  selectedSuggestionIndex.value = -1
+  suggestions.closeSuggestions()
 }
 
-// Função para melhorar texto com IA
 async function improveText() {
-  if (!newTodo.value.title.trim() || isImprovingText.value) return
-  
-  isImprovingText.value = true
-  
-  try {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const response = await fetch(`${API_URL}/api/ai/improve-text`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: newTodo.value.title })
-    })
-    
-    const result = await response.json()
-    
-    if (result.success && result.improved) {
-      newTodo.value.title = result.improved
-    } else {
-      alert(result.message || 'Erro ao melhorar texto')
-    }
-  } catch (error) {
-    console.error('Erro ao melhorar texto:', error)
-    alert('Erro ao conectar com o servidor. Verifique se o backend está rodando.')
-  } finally {
-    isImprovingText.value = false
+  const improved = await aiImproveText(newTodo.value.title, API_URL)
+  if (improved) {
+    newTodo.value.title = improved
   }
 }
 
@@ -496,46 +405,6 @@ onMounted(async () => {
   
   await nextTick()
   initSortable()
-})
-
-let sortableInstance = null
-
-function initSortable() {
-  if (todoListRef.value && viewMode.value === 'list') {
-    sortableInstance = Sortable.create(todoListRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      onEnd: async (evt) => {
-        const newOrder = Array.from(todoListRef.value.children).map(el => {
-          const index = Array.from(todoListRef.value.children).indexOf(el)
-          return filteredTodos.value[index]?.id
-        }).filter(Boolean)
-        
-        await todoStore.updateOrder(newOrder)
-      }
-    })
-  }
-}
-
-function destroySortable() {
-  if (sortableInstance) {
-    sortableInstance.destroy()
-    sortableInstance = null
-  }
-}
-
-// Reinicializar sortable quando viewMode mudar
-function updateSortable() {
-  destroySortable()
-  if (viewMode.value === 'list') {
-    nextTick(() => initSortable())
-  }
-}
-
-// Watch para recriar sortable quando viewMode mudar
-import { watch } from 'vue'
-watch(viewMode, () => {
-  updateSortable()
 })
 
 function toggleTag(tagId) {
@@ -614,153 +483,28 @@ async function togglePin(todoId) {
 }
 
 async function toggleArchive(todoId) {
-  const todo = todoStore.todos.find(t => t.id === todoId)
-  if (todo) {
-    await todoStore.updateTodo(todoId, { archived: true })
-  }
+  await todoStore.updateTodo(todoId, { archived: true })
 }
 
 async function updateTodoTitle(todoId, newTitle) {
   await todoStore.updateTodo(todoId, { title: newTitle })
 }
 
-function exportSelectedAsTxt() {
-  const selected = todoStore.todos.filter(t => selectedTodos.value.includes(t.id))
-  
-  if (selected.length === 0) {
-    alert('Nenhuma tarefa selecionada')
-    return
-  }
-  
-  let content = '=== LISTA DE TAREFAS ===\n\n'
-  
-  selected.forEach((todo, index) => {
-    const pinned = todo.pinned ? '📌 ' : ''
-    
-    content += `${index + 1}. ${pinned}${todo.title}\n`
-    
-    if (todo.done && todo.completedAt) {
-      const date = new Date(todo.completedAt).toLocaleString('pt-BR')
-      content += `   Concluída em: ${date}\n`
-    }
-    
-    content += '\n'
-  })
-  
-  content += `\n--- Exportado em ${new Date().toLocaleString('pt-BR')} ---`
-  
-  // Gerar nome do arquivo com formato dia_hora_min_seg
-  const now = new Date()
-  const day = String(now.getDate()).padStart(2, '0')
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const year = now.getFullYear()
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-  const filename = `tarefas-${day}-${month}-${year}_${hours}h${minutes}min${seconds}s.txt`
-  
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  window.URL.revokeObjectURL(url)
-  document.body.removeChild(a)
-  
-  // Limpar seleção após exportar
+function handleExportSelectedAsTxt() {
+  exportSelectedAsTxt(selectedTodos.value, todoStore.todos)
   selectedTodos.value = []
 }
 
-async function exportData() {
-  try {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const response = await fetch(`${API_URL}/api/export`)
-    
-    if (!response.ok) {
-      throw new Error('Erro ao exportar dados')
-    }
-    
-    const blob = await response.blob()
-    
-    // Gerar nome do arquivo com formato dia_hora_min_seg
-    const now = new Date()
-    const day = String(now.getDate()).padStart(2, '0')
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const year = now.getFullYear()
-    const hours = String(now.getHours()).padStart(2, '0')
-    const minutes = String(now.getMinutes()).padStart(2, '0')
-    const seconds = String(now.getSeconds()).padStart(2, '0')
-    const filename = `todo-backup-${day}-${month}-${year}_${hours}h${minutes}min${seconds}s.json`
-    
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-  } catch (error) {
-    console.error('Erro ao exportar:', error)
-    alert('Erro ao exportar dados. Verifique se o servidor está rodando.')
-  }
+function handleExportData() {
+  exportData(API_URL)
 }
 
-async function importData() {
-  try {
-    // Criar input file temporário
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json,application/json'
-    
-    input.onchange = async (e) => {
-      const file = e.target.files[0]
-      if (!file) return
-      
-      // Confirmar com o usuário
-      if (!confirm('⚠️ ATENÇÃO: Importar dados irá SUBSTITUIR TODOS os dados atuais. Deseja continuar?')) {
-        return
-      }
-      
-      try {
-        // Ler arquivo
-        const text = await file.text()
-        const importedData = JSON.parse(text)
-        
-        // Enviar para o backend
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        const response = await fetch(`${API_URL}/api/import`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(importedData)
-        })
-        
-        const result = await response.json()
-        
-        if (result.success) {
-          alert(`✅ Dados importados com sucesso!\n\n📊 Estatísticas:\n- ${result.stats.users} usuário(s)\n- ${result.stats.todos} tarefa(s)\n- ${result.stats.tags} tag(s)`)
-          
-          // Recarregar dados nas stores
-          await Promise.all([
-            todoStore.fetchTodos(),
-            tagStore.fetchTags()
-          ])
-        } else {
-          alert(`❌ Erro: ${result.message}`)
-        }
-      } catch (error) {
-        console.error('Erro ao importar:', error)
-        alert('❌ Erro ao processar arquivo. Verifique se é um arquivo JSON válido.')
-      }
-    }
-    
-    // Trigger file picker
-    input.click()
-  } catch (error) {
-    console.error('Erro ao importar:', error)
-    alert('Erro ao importar dados. Verifique se o servidor está rodando.')
-  }
+function handleImportData() {
+  importData(API_URL, async () => {
+    await Promise.all([
+      todoStore.fetchTodos(),
+      tagStore.fetchTags()
+    ])
+  })
 }
 </script>
