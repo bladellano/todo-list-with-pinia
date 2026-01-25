@@ -32,5 +32,5 @@ setupAIRoutes(app, process.env.OPENAI_API_KEY, process.env.OPENAI_MODEL)
 // Iniciar servidor
 await initDataFile()
 app.listen(PORT, () => {
-  console.log(`🚀 @todo Servidor rodando em ${HOST}:${PORT}`)
+  console.log(`🚀 Servidor rodando em ${HOST}:${PORT}`)
 })
