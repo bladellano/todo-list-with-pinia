@@ -5,7 +5,7 @@
       <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Tarefas Arquivadas</h1>
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Tarefas</h1>
             <p class="text-xs md:text-sm text-gray-600 mt-1">
               {{ archivedTodos.length }} {{ archivedTodos.length === 1 ? 'tarefa arquivada' : 'tarefas arquivadas' }}
             </p>

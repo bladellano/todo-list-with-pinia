@@ -2,10 +2,27 @@
   <AppLayout>
     <div class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
-        <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Minhas Tarefas</h1>
+        <div class="flex items-center justify-between cursor-pointer mb-4" @click="showForm = !showForm">
+          <h1 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Tarefas</h1>
+          <button
+            type="button"
+            class="p-1 text-gray-600 hover:text-gray-800 transition"
+            :title="showForm ? 'Recolher formulário' : 'Expandir formulário'"
+          >
+            <svg 
+              class="w-5 h-5 transition-transform duration-200" 
+              :class="{ 'rotate-180': showForm }"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
         
         <!-- Formulário para adicionar tarefa -->
-        <form @submit.prevent="handleAddTodo" class="space-y-4">
+        <form v-show="showForm" @submit.prevent="handleAddTodo" class="space-y-4">
           <div class="flex items-center gap-2">
             <div class="relative flex-1">
               <input
@@ -373,6 +390,7 @@ const editingTodo = ref(null)
 const viewingTodo = ref(null)
 const todoListRef = ref(null)
 const titleInputRef = ref(null)
+const showForm = ref(true)
 const showFilters = ref(false)
 const selectedTodos = ref([])
 const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
