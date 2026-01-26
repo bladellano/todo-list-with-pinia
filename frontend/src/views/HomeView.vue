@@ -458,7 +458,9 @@ function selectCurrentSuggestion() {
 }
 
 function selectSuggestion(title) {
-  suggestions.selectSuggestion(title, titleInputRef.value)
+  newTodo.value.title = title
+  showSuggestions.value = false
+  titleInputRef.value?.focus()
 }
 
 function closeSuggestions() {

@@ -39,11 +39,10 @@ export function useSuggestions(todos, inputValue) {
     }
   }
 
-  const selectSuggestion = (title, titleInputRef) => {
-    inputValue.value = title
+  const selectSuggestion = (title) => {
     showSuggestions.value = false
     selectedSuggestionIndex.value = -1
-    titleInputRef?.focus()
+    return title
   }
 
   const closeSuggestions = () => {
