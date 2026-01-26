@@ -374,6 +374,16 @@
       @save="saveEdit"
       @cancel="cancelEdit"
     />
+    
+    <!-- Toasts -->
+    <Toast
+      v-for="toast in toasts"
+      :key="toast.id"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="removeToast(toast.id)"
+    />
   </AppLayout>
 </template>
 
@@ -387,10 +397,12 @@ import { useAI } from '../composables/useAI'
 import { useExport } from '../composables/useExport'
 import { useTodoFilters } from '../composables/useTodoFilters'
 import { useDragAndDrop } from '../composables/useDragAndDrop'
+import { useToast } from '../composables/useToast'
 import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
 import TodoViewModal from '../components/TodoViewModal.vue'
+import Toast from '../components/Toast.vue'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const todoStore = useTodoStore()
@@ -427,6 +439,7 @@ const { initSortable } = useDragAndDrop(
   computed(() => todoStore.todos),
   todoStore.updateOrder
 )
+const { toasts, success: showSuccess, remove: removeToast } = useToast()
 
 const filteredSuggestions = suggestions.filteredSuggestions
 const showSuggestions = suggestions.showSuggestions
@@ -496,6 +509,8 @@ function toggleTag(tagId) {
 async function handleAddTodo() {
   if (newTodo.value.title.trim()) {
     await todoStore.addTodo({ ...newTodo.value })
+    
+    showSuccess('Tarefa adicionada com sucesso!')
     
     newTodo.value = {
       title: '',
