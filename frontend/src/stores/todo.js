@@ -123,6 +123,30 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  async function moveToTop(id) {
+    try {
+      // 1. Fixar a tarefa
+      await updateTodo(id, { pinned: true })
+      
+      // 2. Mover para o topo da ordem customizada
+      if (customOrder.value.length === 0) {
+        // Se não há ordem customizada, criar uma com todos os IDs
+        customOrder.value = todos.value.map(t => t.id)
+      }
+      
+      // Remover o ID da posição atual
+      customOrder.value = customOrder.value.filter(todoId => todoId !== id)
+      
+      // Adicionar no início
+      customOrder.value.unshift(id)
+      
+      // Salvar nova ordem
+      await saveOrder()
+    } catch (error) {
+      console.error('Erro ao mover para o topo:', error)
+    }
+  }
+
   return {
     todos,
     sortedTodos,
@@ -131,6 +155,7 @@ export const useTodoStore = defineStore('todo', () => {
     addTodo,
     updateTodo,
     deleteTodo,
-    updateOrder
+    updateOrder,
+    moveToTop
   }
 })

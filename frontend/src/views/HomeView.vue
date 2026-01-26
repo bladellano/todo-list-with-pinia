@@ -110,6 +110,22 @@
             </div>
           </div>
           
+          <!-- Opção de pinar -->
+          <div class="flex items-center space-x-2">
+            <input
+              id="pin-new-todo"
+              v-model="newTodo.pinned"
+              type="checkbox"
+              class="w-4 h-4 text-yellow-600 rounded focus:ring-2 focus:ring-yellow-500"
+            />
+            <label for="pin-new-todo" class="text-sm md:text-base text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-1">
+              <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a5.927 5.927 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707-.195-.195.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a5.922 5.922 0 0 1 1.013.16l3.134-3.133a2.772 2.772 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/>
+              </svg>
+              <span>Fixar no topo</span>
+            </label>
+          </div>
+          
           <button
             type="submit"
             class="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm md:text-base font-medium"
@@ -335,6 +351,7 @@
             @toggle-pin="togglePin"
             @toggle-archive="toggleArchive"
             @update-title="updateTodoTitle"
+            @move-to-top="moveToTop"
           />
         </div>
       </div>
@@ -383,7 +400,8 @@ const newTodo = ref({
   title: '',
   description: '',
   tagIds: [],
-  done: false
+  done: false,
+  pinned: false
 })
 
 const editingTodo = ref(null)
@@ -481,7 +499,8 @@ async function handleAddTodo() {
       title: '',
       description: '',
       tagIds: [],
-      done: false
+      done: false,
+      pinned: false
     }
   }
 }
@@ -545,6 +564,10 @@ async function toggleArchive(todoId) {
 
 async function updateTodoTitle(todoId, newTitle) {
   await todoStore.updateTodo(todoId, { title: newTitle })
+}
+
+async function moveToTop(todoId) {
+  await todoStore.moveToTop(todoId)
 }
 
 function handleExportSelectedAsTxt() {

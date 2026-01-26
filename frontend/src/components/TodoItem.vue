@@ -48,6 +48,17 @@
             </svg>
           </button>
           
+          <!-- Botão Para o Topo -->
+          <button
+            @click="$emit('move-to-top', todo.id)"
+            class="p-1 md:p-1.5 rounded transition text-purple-600 hover:bg-purple-50"
+            title="Fixar e mover para o topo"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+          </button>
+          
           <button
             @click="$emit('toggle-pin', todo.id)"
             class="p-1 md:p-1.5 rounded transition"
@@ -189,7 +200,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin', 'toggle-archive', 'update-title', 'view'])
+const emit = defineEmits(['edit', 'delete', 'toggle-done', 'toggle-select', 'toggle-pin', 'toggle-archive', 'update-title', 'view', 'move-to-top'])
 
 const isEditingTitle = ref(false)
 const editedTitle = ref('')
