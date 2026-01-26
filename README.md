@@ -25,14 +25,31 @@ npm run dev
 
 ## �📋 Funcionalidades
 
+### Core
 - ✅ Autenticação simples
 - ✅ CRUD completo de tarefas
 - ✅ CRUD completo de tags
 - ✅ Associação de múltiplas tags às tarefas
-- ✅ Reordenação de tarefas via drag and drop
-- ✅ Marcar tarefas como concluídas
 - ✅ Persistência de dados em arquivo JSON local
+
+### Organização
+- ✅ Reordenação de tarefas via drag and drop (apenas em modo lista)
+- ✅ Marcar tarefas como concluídas
+- ✅ Fixar tarefas no topo (pinned)
+- ✅ Arquivar tarefas concluídas
+- ✅ Filtros por texto e tags
+- ✅ Múltiplos modos de visualização (lista + grids de 2-8 colunas)
+
+### Experiência do Usuário
 - ✅ Interface responsiva com Tailwind CSS
+- ✅ Dark mode com persistência de preferência
+- ✅ Sugestões inteligentes baseadas em tarefas anteriores
+- ✅ Melhoramento de texto com IA (OpenAI - opcional)
+- ✅ Notificações toast (success/error/info)
+
+### Backup e Exportação
+- ✅ Exportar/importar dados completos (JSON)
+- ✅ Exportar tarefas selecionadas como TXT
 
 ## 🏗️ Arquitetura
 
@@ -44,15 +61,28 @@ frontend/
 │   ├── components/           # Componentes reutilizáveis
 │   │   ├── AppLayout.vue     # Layout principal com menu
 │   │   ├── TodoItem.vue      # Item individual de tarefa
-│   │   └── TodoEditModal.vue # Modal de edição
+│   │   ├── TodoEditModal.vue # Modal de edição
+│   │   ├── TodoViewModal.vue # Modal de visualização
+│   │   └── Toast.vue         # Notificações temporárias
 │   ├── stores/               # Stores Pinia
 │   │   ├── auth.js          # Gerenciamento de autenticação
 │   │   ├── todo.js          # Gerenciamento de tarefas
-│   │   └── tag.js           # Gerenciamento de tags
+│   │   ├── tag.js           # Gerenciamento de tags
+│   │   └── theme.js         # Dark mode preference
+│   ├── composables/          # Lógica reutilizável
+│   │   ├── useDragAndDrop.js # Integração SortableJS
+│   │   ├── useSuggestions.js # Autocomplete de tarefas
+│   │   ├── useAI.js         # Integração OpenAI
+│   │   ├── useExport.js     # Export/import de dados
+│   │   ├── useTodoFilters.js # Filtros de busca
+│   │   └── useToast.js      # Sistema de notificações
 │   ├── views/                # Páginas da aplicação
 │   │   ├── LoginView.vue    # Página de login
 │   │   ├── HomeView.vue     # Página principal (tarefas)
+│   │   ├── ArchivedView.vue # Página de tarefas arquivadas
 │   │   └── TagsView.vue     # Página de configuração de tags
+│   ├── utils/
+│   │   └── colors.js        # Cores para tags
 │   ├── router/
 │   │   └── index.js         # Configuração de rotas
 │   ├── App.vue              # Componente raiz
@@ -65,8 +95,17 @@ frontend/
 
 ```
 backend/
-├── server.js                 # Servidor Express com API REST
-├── data.json                 # Arquivo de dados (não versionado)
+├── server.js                 # Servidor Express principal
+├── routes/                   # Rotas modulares
+│   ├── auth.js              # Autenticação
+│   ├── todos.js             # CRUD de tarefas
+│   ├── tags.js              # CRUD de tags
+│   ├── data.js              # Export/import backup
+│   └── ai.js                # Integração OpenAI
+├── utils/
+│   └── storage.js           # Funções de leitura/escrita JSON
+├── data/
+│   └── data.json            # Arquivo de dados (persistente)
 └── package.json
 ```
 
@@ -76,8 +115,29 @@ backend/
 
 - Node.js 18+ instalado
 - npm ou yarn
+- (Opcional) OpenAI API key para feature de melhoramento de texto com IA
 
-### 1. Instalar dependências
+### 1. Configurar variáveis de ambiente
+
+Copie o arquivo `.env.example` para `.env` na raiz do projeto:
+
+```bash
+cp .env.example .env
+```
+
+Edite o `.env` e configure (opcional):
+
+```env
+# Backend
+PORT=3001
+OPENAI_API_KEY=your-api-key-here  # Opcional, apenas se quiser usar IA
+OPENAI_MODEL=gpt-4o-mini
+
+# Frontend
+VITE_API_URL=http://localhost:3001
+```
+
+### 2. Instalar dependências
 
 ```bash
 # Backend
@@ -89,7 +149,7 @@ cd ../frontend
 npm install
 ```
 
-### 2. Iniciar o Backend
+### 3. Iniciar o Backend
 
 ```bash
 cd backend
@@ -98,7 +158,7 @@ npm run dev
 
 O servidor estará rodando em `http://localhost:3001`
 
-### 3. Iniciar o Frontend
+### 4. Iniciar o Frontend
 
 Em outro terminal:
 
@@ -109,7 +169,7 @@ npm run dev
 
 O frontend estará disponível em `http://localhost:5173`
 
-### 4. Acessar a Aplicação
+### 5. Acessar a Aplicação
 
 Abra o navegador em `http://localhost:5173` e faça login com:
 
@@ -131,6 +191,8 @@ Abra o navegador em `http://localhost:5173` e faça login com:
 - **Node.js** - Runtime JavaScript
 - **Express** - Framework web minimalista
 - **CORS** - Middleware para habilitar CORS
+- **OpenAI** - Integração com GPT para melhorar textos (opcional)
+- **dotenv** - Gerenciamento de variáveis de ambiente
 
 ## 🔌 API Endpoints
 
@@ -140,7 +202,7 @@ Abra o navegador em `http://localhost:5173` e faça login com:
 ### Tarefas
 - `GET /api/todos` - Listar todas as tarefas
 - `POST /api/todos` - Criar nova tarefa
-- `PUT /api/todos/:id` - Atualizar tarefa
+- `PUT /api/todos/:id` - Atualizar tarefa (suporta pinned, archived, done)
 - `DELETE /api/todos/:id` - Deletar tarefa
 - `GET /api/todos/order` - Obter ordem personalizada
 - `PUT /api/todos/order` - Atualizar ordem personalizada
@@ -150,6 +212,13 @@ Abra o navegador em `http://localhost:5173` e faça login com:
 - `POST /api/tags` - Criar nova tag
 - `PUT /api/tags/:id` - Atualizar tag
 - `DELETE /api/tags/:id` - Deletar tag
+
+### Backup
+- `GET /api/data/export` - Exportar backup completo (JSON)
+- `POST /api/data/import` - Importar backup
+
+### IA (Opcional)
+- `POST /api/ai/improve-text` - Melhorar texto com OpenAI
 
 **Base URL:** `http://localhost:3001/api`
 
@@ -169,7 +238,10 @@ Abra o navegador em `http://localhost:5173` e faça login com:
       "description": "Descrição opcional",
       "tagIds": [1, 2],
       "done": false,
-      "createdAt": "2026-01-23T00:00:00.000Z"
+      "pinned": false,
+      "archived": false,
+      "createdAt": "2026-01-23T00:00:00.000Z",
+      "completedAt": null
     }
   ],
   "tags": [
@@ -182,7 +254,40 @@ Abra o navegador em `http://localhost:5173` e faça login com:
 }
 ```
 
-## 🎨 Fluxo da Aplicação
+## � Padrões de Desenvolvimento
+
+### Composition API
+O projeto usa exclusivamente Vue 3 Composition API com `<script setup>`:
+
+```vue
+<script setup>
+import { ref, computed } from 'vue'
+import { useTodoStore } from '@/stores/todo'
+
+const todoStore = useTodoStore()
+const newTodo = ref('')
+</script>
+```
+
+### Composables
+Lógica reutilizável é organizada em composables:
+
+- **useDragAndDrop** - Gerencia drag-and-drop com SortableJS (apenas modo lista)
+- **useSuggestions** - Fornece sugestões baseadas em tarefas anteriores
+- **useAI** - Integração com OpenAI para melhorar textos
+- **useExport** - Exportação/importação de dados
+- **useTodoFilters** - Sistema de filtros (busca + tags)
+- **useToast** - Notificações temporárias
+
+### Stores Pinia
+Estado global gerenciado por stores:
+
+- **auth** - Autenticação + persistência em localStorage
+- **todo** - CRUD de tarefas + ordenação + pinned/archived
+- **tag** - CRUD de tags
+- **theme** - Preferência dark/light mode
+
+## �🎨 Fluxo da Aplicação
 
 ### 1. Login
 - Usuário acessa `/login`
