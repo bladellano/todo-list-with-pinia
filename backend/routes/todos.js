@@ -1,6 +1,39 @@
 import { readData, writeData } from '../utils/storage.js'
+import { apiKeyAuth } from '../middleware/apiAuth.js'
 
 export function setupTodoRoutes(app) {
+  // Listar todos (com filtros opcionais)
+  app.get('/api/external/todos', apiKeyAuth, async (req, res) => {
+    const data = await readData()
+    let todos = data.todos
+    
+    // Filtros via query params
+    const { notificable, pinned, done, archived } = req.query
+    
+    // Aplicar filtros se fornecidos
+    if (notificable !== undefined) {
+      const filterValue = notificable === 'true' || notificable === '1'
+      todos = todos.filter(t => t.notificable === filterValue)
+    }
+    
+    if (pinned !== undefined) {
+      const filterValue = pinned === 'true' || pinned === '1'
+      todos = todos.filter(t => t.pinned === filterValue)
+    }
+    
+    if (done !== undefined) {
+      const filterValue = done === 'true' || done === '1'
+      todos = todos.filter(t => t.done === filterValue)
+    }
+    
+    if (archived !== undefined) {
+      const filterValue = archived === 'true' || archived === '1'
+      todos = todos.filter(t => t.archived === filterValue)
+    }
+    
+    res.json(todos)
+  })
+
   // Listar todos
   app.get('/api/todos', async (req, res) => {
     const data = await readData()
