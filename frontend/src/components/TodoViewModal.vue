@@ -50,7 +50,10 @@
       <!-- Descrição -->
       <div v-if="todo.description" class="mb-6">
         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Descrição</h3>
-        <p class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ todo.description }}</p>
+        <div 
+          class="text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none"
+          v-html="renderMarkdown(todo.description)"
+        />
       </div>
       
       <!-- Tags -->
@@ -109,6 +112,9 @@
 
 <script setup>
 import { getTagColor } from '../utils/colors'
+import { useMarkdown } from '../composables/useMarkdown'
+
+const { renderMarkdown } = useMarkdown()
 
 defineProps({
   todo: {

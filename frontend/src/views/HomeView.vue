@@ -83,12 +83,46 @@
             </button>
           </div>
           
+          <!-- Campo de Descrição com Markdown -->
           <div>
+            <!-- Abas -->
+            <div class="flex border-b border-gray-200 dark:border-gray-600 mb-2">
+              <button
+                type="button"
+                @click="setTab('preview')"
+                class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors border-b-2"
+                :class="isPreviewTab 
+                  ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' 
+                  : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                @click="setTab('edit')"
+                class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors border-b-2"
+                :class="isEditTab 
+                  ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' 
+                  : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
+              >
+                Editar
+              </button>
+            </div>
+            
+            <!-- Editor -->
             <textarea
+              v-show="isEditTab"
               v-model="newTodo.description"
-              placeholder="Descrição (opcional)"
-              rows="2"
-              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Descrição em Markdown (opcional)..."
+              rows="4"
+              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+            />
+            
+            <!-- Preview -->
+            <div
+              v-show="isPreviewTab"
+              class="w-full min-h-[100px] px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none"
+              v-html="renderMarkdown(newTodo.description)"
             />
           </div>
           
@@ -398,6 +432,7 @@ import { useExport } from '../composables/useExport'
 import { useTodoFilters } from '../composables/useTodoFilters'
 import { useDragAndDrop } from '../composables/useDragAndDrop'
 import { useToast } from '../composables/useToast'
+import { useMarkdown } from '../composables/useMarkdown'
 import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
@@ -440,6 +475,7 @@ const { initSortable } = useDragAndDrop(
   todoStore.updateOrder
 )
 const { toasts, success: showSuccess, remove: removeToast } = useToast()
+const { activeTab, isEditTab, isPreviewTab, setTab, renderMarkdown } = useMarkdown()
 
 const filteredSuggestions = suggestions.filteredSuggestions
 const showSuggestions = suggestions.showSuggestions
