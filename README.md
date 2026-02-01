@@ -7,8 +7,8 @@ Aplicação web simples de lista de tarefas com suporte a tags, desenvolvida com
 - **[QUICK-START.md](docs/QUICK-START.md)** - Guia rápido para iniciar a aplicação
 - **[ARQUITETURA.md](docs/ARQUITETURA.md)** - Documentação técnica detalhada
 - **[EXEMPLOS-USO.md](docs/EXEMPLOS-USO.md)** - Exemplos práticos de uso
-- **[RESUMO-IMPLEMENTACAO.md](docs/RESUMO-IMPLEMENTACAO.md)** - Checklist de implementação
-
+- **[RESUMO-IMPLEMENTACAO.md](docs/RESUMO-IMPLEMENTACAO.md)** - Checklist de implementação- **[EMAIL-SENDING.md](docs/EMAIL-SENDING.md)** - Guia completo de envio de tarefas por e-mail
+- **[N8N-INTEGRATION.md](docs/N8N-INTEGRATION.md)** - Integração com n8n para automações
 ## 🚀 Início Rápido
 
 ```bash
@@ -46,6 +46,7 @@ npm run dev
 - ✅ Sugestões inteligentes baseadas em tarefas anteriores
 - ✅ Melhoramento de texto com IA (OpenAI - opcional)
 - ✅ Notificações toast (success/error/info)
+- ✅ Envio de tarefas por e-mail via n8n (com opções de frequência)
 
 ### Backup e Exportação
 - ✅ Exportar/importar dados completos (JSON)
@@ -240,6 +241,11 @@ Abra o navegador em `http://localhost:5173` e faça login com:
       "done": false,
       "pinned": false,
       "archived": false,
+      "notificable": false,
+      "sendByEmail": true,
+      "emails": ["user@example.com", "team@example.com"],
+      "sendFrequency": "daily",
+      "sendTime": "09:00",
       "createdAt": "2026-01-23T00:00:00.000Z",
       "completedAt": null
     }

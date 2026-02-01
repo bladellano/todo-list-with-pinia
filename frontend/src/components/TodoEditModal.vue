@@ -127,6 +127,69 @@
           </label>
         </div>
         
+        <!-- Envio por E-mail -->
+        <div class="border-t pt-4 space-y-4">
+          <div class="flex items-center space-x-2">
+            <input
+              v-model="editForm.sendByEmail"
+              type="checkbox"
+              id="send-email-checkbox"
+              class="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+            />
+            <label for="send-email-checkbox" class="text-sm font-medium text-gray-700">
+              Enviar por e-mail (via n8n)
+            </label>
+          </div>
+          
+          <!-- Campos de e-mail (aparecem apenas se checkbox marcado) -->
+          <div v-if="editForm.sendByEmail" class="space-y-4 pl-7">
+            <EmailInput
+              v-model="editForm.emails"
+              label="Destinatários"
+              placeholder="Digite um e-mail e pressione Enter"
+              hint="Separe múltiplos e-mails com ; ou pressione Enter/Tab"
+            />
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Frequência de envio
+              </label>
+              <div class="space-y-2">
+                <label class="flex items-center space-x-2">
+                  <input
+                    v-model="editForm.sendFrequency"
+                    type="radio"
+                    value="once"
+                    class="w-4 h-4 text-green-600"
+                  />
+                  <span class="text-sm text-gray-700">Enviar apenas uma vez</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                  <input
+                    v-model="editForm.sendFrequency"
+                    type="radio"
+                    value="daily"
+                    class="w-4 h-4 text-green-600"
+                  />
+                  <span class="text-sm text-gray-700">Enviar diariamente</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Horário (aparece apenas se frequência for diária) -->
+            <div v-if="editForm.sendFrequency === 'daily'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Horário de envio
+              </label>
+              <input
+                v-model="editForm.sendTime"
+                type="time"
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+        
         <div class="flex flex-col space-y-3 pt-4">
           <div class="flex space-x-3">
             <button
@@ -165,6 +228,7 @@
 import { ref } from 'vue'
 import { marked } from 'marked'
 import { getTagColor } from '../utils/colors'
+import EmailInput from './EmailInput.vue'
 
 // Configurar marked
 marked.setOptions({
@@ -196,7 +260,11 @@ const editForm = ref({
   description: props.todo.description || '',
   tagIds: props.todo.tagIds || [],
   done: props.todo.done || false,
-  notificable: props.todo.notificable || false
+  notificable: props.todo.notificable || false,
+  sendByEmail: props.todo.sendByEmail || false,
+  emails: props.todo.emails || [],
+  sendFrequency: props.todo.sendFrequency || 'once',
+  sendTime: props.todo.sendTime || '09:00'
 })
 
 // Estado para melhorar texto com IA
