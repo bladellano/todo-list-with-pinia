@@ -56,6 +56,7 @@
       :all-tags="tagStore.tags"
       @save="saveEdit"
       @cancel="cancelEdit"
+      @clone="cloneTodo"
     />
   </AppLayout>
 </template>
@@ -97,6 +98,21 @@ function editTodo(todo) {
 async function saveEdit(updatedTodo) {
   await todoStore.updateTodo(updatedTodo.id, updatedTodo)
   editingTodo.value = null
+}
+
+async function cloneTodo(todo) {
+  try {
+    const clonedTodo = await todoStore.cloneTodo(todo)
+    editingTodo.value = null
+    
+    // Opcionalmente, abrir o modal de edição para a tarefa clonada
+    setTimeout(() => {
+      editTodo(clonedTodo)
+    }, 300)
+  } catch (error) {
+    console.error('Erro ao clonar tarefa:', error)
+    alert('Erro ao clonar tarefa. Tente novamente.')
+  }
 }
 
 function cancelEdit() {

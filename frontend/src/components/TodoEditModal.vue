@@ -127,19 +127,33 @@
           </label>
         </div>
         
-        <div class="flex space-x-3 pt-4">
-          <button
-            type="submit"
-            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-          >
-            Salvar
-          </button>
+        <div class="flex flex-col space-y-3 pt-4">
+          <div class="flex space-x-3">
+            <button
+              type="submit"
+              class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            >
+              Salvar
+            </button>
+            <button
+              type="button"
+              @click="$emit('cancel')"
+              class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition"
+            >
+              Cancelar
+            </button>
+          </div>
+          
           <button
             type="button"
-            @click="$emit('cancel')"
-            class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition"
+            @click="handleClone"
+            class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition flex items-center justify-center space-x-2"
+            title="Criar uma cópia desta tarefa"
           >
-            Cancelar
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <span>Clonar Tarefa</span>
           </button>
         </div>
       </form>
@@ -171,7 +185,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits(['save', 'cancel', 'clone'])
 
 // Estado da aba ativa
 const activeTab = ref('preview')
@@ -242,5 +256,9 @@ function toggleTag(tagId) {
 
 function handleSave() {
   emit('save', editForm.value)
+}
+
+function handleClone() {
+  emit('clone', props.todo)
 }
 </script>

@@ -147,6 +147,38 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  async function cloneTodo(todo) {
+    try {
+      // Criar uma cópia da tarefa sem o ID e timestamps
+      const clonedTodo = {
+        title: `${todo.title} (Cópia)`,
+        description: todo.description || '',
+        tagIds: [...(todo.tagIds || [])],
+        done: false, // Nova tarefa sempre começa como não concluída
+        pinned: todo.pinned || false,
+        notificable: todo.notificable || false,
+        archived: false // Nova tarefa nunca começa arquivada
+      }
+      
+      const response = await fetch(`${API_URL}/todos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clonedTodo)
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const newTodo = await response.json()
+      todos.value.push(newTodo)
+      return newTodo
+    } catch (error) {
+      console.error('Erro ao clonar tarefa:', error)
+      throw error
+    }
+  }
+
   return {
     todos,
     sortedTodos,
@@ -156,6 +188,7 @@ export const useTodoStore = defineStore('todo', () => {
     updateTodo,
     deleteTodo,
     updateOrder,
-    moveToTop
+    moveToTop,
+    cloneTodo
   }
 })
