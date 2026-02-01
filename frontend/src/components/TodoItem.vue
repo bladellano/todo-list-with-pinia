@@ -4,7 +4,9 @@
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
-      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned
+      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned,
+      'bg-orange-50 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600': todo.sendByEmail && !todo.pinned,
+      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned
     }"
     @click="handleCardClick"
   >

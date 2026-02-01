@@ -8,7 +8,7 @@ export function setupTodoRoutes(app) {
     let todos = data.todos
     
     // Filtros via query params
-    const { notificable, pinned, done, archived } = req.query
+    const { notificable, pinned, done, archived, sendByEmail } = req.query
     
     // Aplicar filtros se fornecidos
     if (notificable !== undefined) {
@@ -29,6 +29,11 @@ export function setupTodoRoutes(app) {
     if (archived !== undefined) {
       const filterValue = archived === 'true' || archived === '1'
       todos = todos.filter(t => t.archived === filterValue)
+    }
+
+    if (sendByEmail !== undefined) {
+      const filterValue = sendByEmail === 'true' || sendByEmail === '1'
+      todos = todos.filter(t => t.sendByEmail === filterValue)
     }
     
     res.json(todos)

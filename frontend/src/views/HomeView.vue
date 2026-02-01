@@ -208,7 +208,7 @@
           
           <!-- Filtro por tags -->
           <div v-if="tagStore.tags.length > 0" class="mb-3 md:mb-4">
-            <label class="text-xs md:text-sm font-medium text-gray-700 mb-2 block">Filtrar por tags:</label>
+            <label class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Filtrar por tags:</label>
             <div class="flex flex-wrap gap-1.5 md:gap-2">
               <button
                 v-for="tag in tagStore.tags"
@@ -225,8 +225,55 @@
             </div>
           </div>
           
+          <!-- Filtro por envio de e-mail -->
+          <div class="mb-3 md:mb-4">
+            <label class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Filtrar por envio de e-mail:</label>
+            <div class="flex flex-wrap gap-1.5 md:gap-2">
+              <button
+                type="button"
+                @click="setSendFrequencyFilter('all')"
+                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
+                :class="sendFrequencyFilter === 'all' 
+                  ? 'bg-blue-500 text-white border-blue-600 font-medium'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                @click="setSendFrequencyFilter('email-enabled')"
+                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
+                :class="sendFrequencyFilter === 'email-enabled' 
+                  ? 'bg-orange-500 text-white border-orange-600 font-medium'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
+              >
+                Com e-mail ativo
+              </button>
+              <button
+                type="button"
+                @click="setSendFrequencyFilter('once')"
+                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
+                :class="sendFrequencyFilter === 'once' 
+                  ? 'bg-purple-500 text-white border-purple-600 font-medium'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
+              >
+                Envio único
+              </button>
+              <button
+                type="button"
+                @click="setSendFrequencyFilter('daily')"
+                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
+                :class="sendFrequencyFilter === 'daily' 
+                  ? 'bg-green-500 text-white border-green-600 font-medium'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
+              >
+                Envio diário
+              </button>
+            </div>
+          </div>
+          
           <!-- Botão limpar filtros -->
-          <div v-if="searchQuery || selectedFilterTags.length > 0" class="flex justify-end">
+          <div v-if="searchQuery || selectedFilterTags.length > 0 || sendFrequencyFilter !== 'all'" class="flex justify-end">
             <button
               @click="clearFilters"
               class="text-sm text-gray-600 hover:text-gray-800 underline"
@@ -462,7 +509,7 @@ const selectedTodos = ref([])
 const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
 
 // Composables
-const { searchQuery, selectedFilterTags, filteredTodos, toggleFilterTag, clearFilters } = 
+const { searchQuery, selectedFilterTags, sendFrequencyFilter, filteredTodos, toggleFilterTag, setSendFrequencyFilter, clearFilters } = 
   useTodoFilters(computed(() => todoStore.sortedTodos))
 
 const suggestions = useSuggestions(computed(() => todoStore.todos), computed(() => newTodo.value.title))

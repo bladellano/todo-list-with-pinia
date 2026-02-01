@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 export function useTodoFilters(todos) {
   const searchQuery = ref('')
   const selectedFilterTags = ref([])
+  const sendFrequencyFilter = ref('all') // 'all', 'once', 'daily', 'email-enabled'
 
   const filteredTodos = computed(() => {
     let result = todos.value.filter(todo => !todo.archived)
@@ -24,6 +25,17 @@ export function useTodoFilters(todos) {
       })
     }
     
+    // Filtro por sendFrequency
+    if (sendFrequencyFilter.value !== 'all') {
+      if (sendFrequencyFilter.value === 'email-enabled') {
+        result = result.filter(todo => todo.sendByEmail === true)
+      } else {
+        result = result.filter(todo => 
+          todo.sendByEmail === true && todo.sendFrequency === sendFrequencyFilter.value
+        )
+      }
+    }
+    
     return result
   })
 
@@ -36,16 +48,23 @@ export function useTodoFilters(todos) {
     }
   }
 
+  const setSendFrequencyFilter = (value) => {
+    sendFrequencyFilter.value = value
+  }
+
   const clearFilters = () => {
     searchQuery.value = ''
     selectedFilterTags.value = []
+    sendFrequencyFilter.value = 'all'
   }
 
   return {
     searchQuery,
     selectedFilterTags,
+    sendFrequencyFilter,
     filteredTodos,
     toggleFilterTag,
+    setSendFrequencyFilter,
     clearFilters
   }
 }
