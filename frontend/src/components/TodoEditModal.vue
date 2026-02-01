@@ -149,44 +149,6 @@
               placeholder="Digite um e-mail e pressione Enter"
               hint="Separe múltiplos e-mails com ; ou pressione Enter/Tab"
             />
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Frequência de envio
-              </label>
-              <div class="space-y-2">
-                <label class="flex items-center space-x-2">
-                  <input
-                    v-model="editForm.sendFrequency"
-                    type="radio"
-                    value="once"
-                    class="w-4 h-4 text-green-600"
-                  />
-                  <span class="text-sm text-gray-700">Enviar apenas uma vez</span>
-                </label>
-                <label class="flex items-center space-x-2">
-                  <input
-                    v-model="editForm.sendFrequency"
-                    type="radio"
-                    value="daily"
-                    class="w-4 h-4 text-green-600"
-                  />
-                  <span class="text-sm text-gray-700">Enviar diariamente</span>
-                </label>
-              </div>
-            </div>
-            
-            <!-- Horário (aparece apenas se frequência for diária) -->
-            <div v-if="editForm.sendFrequency === 'daily'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Horário de envio
-              </label>
-              <input
-                v-model="editForm.sendTime"
-                type="time"
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
           </div>
         </div>
         
@@ -263,7 +225,7 @@ const editForm = ref({
   notificable: props.todo.notificable || false,
   sendByEmail: props.todo.sendByEmail || false,
   emails: props.todo.emails || [],
-  sendFrequency: props.todo.sendFrequency || 'once',
+  sendFrequency: props.todo.sendFrequency || 'daily',
   sendTime: props.todo.sendTime || '09:00'
 })
 

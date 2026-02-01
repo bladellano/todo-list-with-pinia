@@ -251,16 +251,6 @@
               </button>
               <button
                 type="button"
-                @click="setSendFrequencyFilter('once')"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="sendFrequencyFilter === 'once' 
-                  ? 'bg-purple-500 text-white border-purple-600 font-medium'
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
-              >
-                Envio único
-              </button>
-              <button
-                type="button"
                 @click="setSendFrequencyFilter('daily')"
                 class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
                 :class="sendFrequencyFilter === 'daily' 

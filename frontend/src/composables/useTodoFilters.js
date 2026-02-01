@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 export function useTodoFilters(todos) {
   const searchQuery = ref('')
   const selectedFilterTags = ref([])
-  const sendFrequencyFilter = ref('all') // 'all', 'once', 'daily', 'email-enabled'
+  const sendFrequencyFilter = ref('all') // 'all', 'daily', 'email-enabled'
 
   const filteredTodos = computed(() => {
     let result = todos.value.filter(todo => !todo.archived)
