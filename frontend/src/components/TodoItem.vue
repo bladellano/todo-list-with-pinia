@@ -1,12 +1,13 @@
 <template>
   <div
-    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all cursor-pointer"
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all cursor-pointer flex flex-col"
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
       'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned,
       'bg-orange-50 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600': todo.sendByEmail && !todo.pinned,
-      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned
+      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned,
+      'max-h-[500px]': viewMode !== 'list'
     }"
     @click="handleCardClick"
   >
@@ -30,7 +31,7 @@
       </div>
       
       <!-- Conteúdo -->
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 overflow-y-auto">
         <!-- Botões de ação no topo -->
         <div class="flex items-center justify-end space-x-0.5 md:space-x-1 mb-2">
           <!-- Botão Done/Undone -->
@@ -147,8 +148,9 @@
         
         <p
           v-if="todo.description"
-          class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1 break-words"
+          class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1 break-words line-clamp-3"
           :class="{ 'line-through': todo.done }"
+          :title="todo.description"
         >
           {{ todo.description }}
         </p>

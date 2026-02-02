@@ -249,16 +249,6 @@
               >
                 Com e-mail ativo
               </button>
-              <button
-                type="button"
-                @click="setSendFrequencyFilter('daily')"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="sendFrequencyFilter === 'daily' 
-                  ? 'bg-green-500 text-white border-green-600 font-medium'
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
-              >
-                Envio diário
-              </button>
             </div>
           </div>
           
@@ -385,7 +375,7 @@
               <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              <span class="hidden sm:inline">Exportar</span>
+              <span class="hidden sm:inline">Backup</span>
             </button>
           </div>
         </div>
@@ -408,7 +398,7 @@
           }"
         >
           <TodoItem
-            v-for="todo in filteredTodos"
+            v-for="todo in paginatedTodos"
             :key="todo.id"
             :todo="todo"
             :tags="getTodoTags(todo)"
@@ -424,6 +414,17 @@
             @update-title="updateTodoTitle"
             @move-to-top="moveToTop"
           />
+        </div>
+        
+        <!-- Elemento sentinela para paginação infinita -->
+        <div v-if="hasMoreTodos" ref="sentinelRef" class="flex justify-center py-4">
+          <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2">
+            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Carregando mais tarefas...</span>
+          </div>
         </div>
       </div>
     </div>
@@ -456,11 +457,32 @@
       :duration="toast.duration"
       @close="removeToast(toast.id)"
     />
+    
+    <!-- Botão Scroll to Top -->
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0 scale-75"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-75"
+    >
+      <button
+        v-if="showScrollToTop"
+        @click="scrollToTop"
+        class="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-200 hover:scale-110"
+        title="Voltar ao topo"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+      </button>
+    </Transition>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 import { useTagStore } from '../stores/tag'
 import { getTagColor } from '../utils/colors'
@@ -497,10 +519,23 @@ const showForm = ref(true)
 const showFilters = ref(false)
 const selectedTodos = ref([])
 const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
+const displayLimit = ref(20)
+const sentinelRef = ref(null)
+const showScrollToTop = ref(false)
 
 // Composables
 const { searchQuery, selectedFilterTags, sendFrequencyFilter, filteredTodos, toggleFilterTag, setSendFrequencyFilter, clearFilters } = 
   useTodoFilters(computed(() => todoStore.sortedTodos))
+
+// Paginação: limita quantas tarefas são exibidas
+const paginatedTodos = computed(() => {
+  return filteredTodos.value.slice(0, displayLimit.value)
+})
+
+// Verifica se há mais tarefas para carregar
+const hasMoreTodos = computed(() => {
+  return filteredTodos.value.length > displayLimit.value
+})
 
 const suggestions = useSuggestions(computed(() => todoStore.todos), computed(() => newTodo.value.title))
 const { isImprovingText, improveText: aiImproveText } = useAI()
@@ -508,7 +543,7 @@ const { exportSelectedAsTxt, exportData, importData } = useExport()
 const { initSortable } = useDragAndDrop(
   todoListRef, 
   viewMode, 
-  filteredTodos, 
+  paginatedTodos, 
   computed(() => todoStore.todos),
   todoStore.updateOrder
 )
@@ -569,7 +604,55 @@ onMounted(async () => {
   
   await nextTick()
   initSortable()
+  setupIntersectionObserver()
+  setupScrollListener()
 })
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+// Configura listener para mostrar/ocultar botão de scroll to top
+function setupScrollListener() {
+  window.addEventListener('scroll', handleScroll)
+}
+
+function handleScroll() {
+  showScrollToTop.value = window.scrollY > 300
+}
+
+// Rola suavemente para o topo
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
+// Configura o observer para paginação infinita
+function setupIntersectionObserver() {
+  if (!sentinelRef.value) return
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && hasMoreTodos.value) {
+          loadMoreTodos()
+        }
+      })
+    },
+    {
+      rootMargin: '100px' // Carrega antes de chegar ao final
+    }
+  )
+  
+  observer.observe(sentinelRef.value)
+}
+
+// Carrega mais tarefas
+function loadMoreTodos() {
+  displayLimit.value += 10
+}
 
 function toggleTag(tagId) {
   const index = newTodo.value.tagIds.indexOf(tagId)
