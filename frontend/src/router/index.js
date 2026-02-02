@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import TagsView from '../views/TagsView.vue'
 import ArchivedView from '../views/ArchivedView.vue'
+import DashboardView from '../views/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
@@ -24,6 +25,12 @@ const router = createRouter({
       path: '/archived',
       name: 'archived',
       component: ArchivedView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
       meta: { requiresAuth: true }
     },
     {
