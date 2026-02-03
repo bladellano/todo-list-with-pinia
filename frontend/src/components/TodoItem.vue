@@ -4,9 +4,10 @@
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
-      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned,
-      'bg-orange-50 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600': todo.sendByEmail && !todo.pinned,
-      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned,
+      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned && !todo.notificable,
+      'bg-orange-50 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600': todo.sendByEmail && !todo.pinned && !todo.notificable,
+      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned && !todo.notificable,
+      'notificable-card': todo.notificable,
       'max-h-[500px]': viewMode !== 'list'
     }"
     @click="handleCardClick"
@@ -256,3 +257,22 @@ function formatDate(dateString) {
   })
 }
 </script>
+
+<style scoped>
+.notificable-card {
+  background-color: #9333ea !important;
+  border-color: #7e22ce !important;
+  border-width: 2px;
+}
+
+.notificable-card * {
+  color: white !important;
+}
+
+.notificable-card .text-gray-500,
+.notificable-card .text-gray-600,
+.notificable-card .text-gray-700,
+.notificable-card .text-gray-400 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+</style>
