@@ -1,6 +1,20 @@
 <template>
   <AppLayout>
-    <div class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
+      <div class="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div class="relative">
+          <div class="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+        </div>
+        <div class="text-center">
+          <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Carregando tarefas...</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Aguarde enquanto preparamos tudo para você</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div v-else class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
         <div class="flex items-center justify-between cursor-pointer mb-4" @click="showForm = !showForm">
           <h1 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Tarefas</h1>
@@ -522,6 +536,7 @@ const viewMode = ref(localStorage.getItem('todoViewMode') || 'list')
 const displayLimit = ref(20)
 const sentinelRef = ref(null)
 const showScrollToTop = ref(false)
+const isLoading = ref(true)
 
 // Composables
 const { searchQuery, selectedFilterTags, sendFrequencyFilter, filteredTodos, toggleFilterTag, setSendFrequencyFilter, clearFilters } = 
@@ -597,10 +612,15 @@ async function improveText() {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    todoStore.fetchTodos(),
-    tagStore.fetchTags()
-  ])
+  isLoading.value = true
+  try {
+    await Promise.all([
+      todoStore.fetchTodos(),
+      tagStore.fetchTags()
+    ])
+  } finally {
+    isLoading.value = false
+  }
   
   await nextTick()
   initSortable()
