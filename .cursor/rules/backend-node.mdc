@@ -1,0 +1,38 @@
+---
+description: Node.js Express backend patterns and API conventions
+globs: backend/**/*
+alwaysApply: false
+---
+
+# Backend Conventions
+
+## Structure
+
+- `server.js` — Express setup, CORS, route registration
+- `routes/` — `auth`, `todos`, `tags`, `data`, `ai` (one file per domain)
+- `utils/storage.js` — `readData()`, `writeData()`, `DATA_FILE`
+- `middleware/apiAuth.js` — optional `API_KEY` protection for integrations (n8n)
+
+## API Endpoints
+
+| Route | Methods |
+|-------|---------|
+| `/api/auth/login` | POST |
+| `/api/todos`, `/api/todos/:id` | GET, POST / PUT, DELETE |
+| `/api/todos/order` | GET, PUT |
+| `/api/tags`, `/api/tags/:id` | GET, POST / PUT, DELETE |
+| `/api/data/export`, `/api/data/import` | GET, POST |
+| `/api/ai/improve-text` | POST |
+
+## Patterns
+
+```javascript
+import { readData, writeData } from '../utils/storage.js'
+const data = await readData()
+// mutate data
+await writeData(data)
+```
+
+- Generate IDs with `Date.now()`
+- Persist entire JSON atomically via `writeData`
+- Production: set `DATA_FILE_PATH` for persistent volume

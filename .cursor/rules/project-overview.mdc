@@ -1,0 +1,39 @@
+---
+description: Todo app architecture, commands, and core conventions
+alwaysApply: true
+---
+
+# Todo List com Tags — Project Overview
+
+Monorepo: **Vue 3 frontend** + **Node.js/Express backend** + **JSON file persistence**.
+
+```
+frontend/  → Vue 3 + Vite + Pinia + Vue Router + Tailwind + SortableJS
+backend/   → Express REST API (modular routes) + fs.promises → data/data.json
+```
+
+## Commands
+
+```bash
+npm run install:all   # first-time setup
+npm run dev           # backend :3001 + frontend :5173
+```
+
+Login: `admin` / `admin` — http://localhost:5173
+
+## Data Flow
+
+Frontend (Pinia stores) → REST API → `backend/data/data.json`
+
+## Key Conventions
+
+- IDs generated with `Date.now()` on backend
+- Todos: `tagIds[]`, `pinned`, `archived`, `done`, email notification fields
+- Custom order via `todoOrder[]`; drag-and-drop only in list view mode
+- Auth: localStorage session, no JWT (personal-use app)
+- Env: root `.env` (copy from `.env.example`); `VITE_API_URL`, `PORT`, optional `OPENAI_API_KEY`, `API_KEY`
+- Minimize scope; match existing Composition API + `<script setup>` patterns
+
+## Docs
+
+See `docs/`, `README.md`, and `.github/copilot-instructions.md` for full details.

@@ -1,0 +1,41 @@
+---
+description: Vue 3 frontend patterns and conventions
+globs: frontend/**/*
+alwaysApply: false
+---
+
+# Frontend Conventions
+
+## Stack
+
+Vue 3 Composition API with `<script setup>`, Pinia stores, Vue Router, Tailwind CSS.
+
+## Stores (`frontend/src/stores/`)
+
+- `auth.js` — login + localStorage
+- `todo.js` — CRUD, order, pinned/archived
+- `tag.js` — tag CRUD
+- `theme.js` — dark mode
+
+Always `await` store actions that call the API.
+
+## Composables (`frontend/src/composables/`)
+
+Reuse existing: `useDragAndDrop`, `useSuggestions`, `useAI`, `useExport`, `useTodoFilters`, `useToast`, `useEmailInput`, `useMarkdown`.
+
+## API URL
+
+```javascript
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`
+```
+
+## Router Guards
+
+- `meta.requiresAuth` — logged-in only
+- `meta.requiresGuest` — login page only
+
+## UI Notes
+
+- Dark mode: use `dark:` Tailwind variants
+- SortableJS drag-and-drop works only when `viewMode === 'list'`
+- Pinned todos always appear at top
