@@ -6,7 +6,8 @@ import { hashPassword } from './password.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export const DATA_FILE = path.join(__dirname, '..', 'data', 'data.json')
+export const DATA_FILE = process.env.DATA_FILE_PATH
+  || path.join(__dirname, '..', 'data', 'data.json')
 
 export async function initDataFile() {
   try {

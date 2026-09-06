@@ -17,7 +17,23 @@ dotenv.config({ path: path.join(__dirname, '../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
-const HOST = (process.env.SERVER_HOST || 'localhost').replace(/^https?:\/\//, '')
+
+function resolveHost() {
+  const isProduction = process.env.NODE_ENV === 'production'
+  let host = (process.env.SERVER_HOST || (isProduction ? '0.0.0.0' : 'localhost'))
+    .replace(/^https?:\/\//, '')
+    .trim()
+
+  const validBindHosts = new Set(['0.0.0.0', '127.0.0.1', 'localhost', '::', '::1'])
+  if (!validBindHosts.has(host)) {
+    console.warn(`⚠️  SERVER_HOST="${host}" não é válido para bind no container — usando 0.0.0.0`)
+    host = '0.0.0.0'
+  }
+
+  return host
+}
+
+const HOST = resolveHost()
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
