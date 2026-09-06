@@ -527,7 +527,6 @@ import TodoEditModal from '../components/TodoEditModal.vue'
 import TodoViewModal from '../components/TodoViewModal.vue'
 import Toast from '../components/Toast.vue'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const todoStore = useTodoStore()
 const tagStore = useTagStore()
 
@@ -619,7 +618,7 @@ function closeSuggestions() {
 }
 
 async function improveText() {
-  const improved = await aiImproveText(newTodo.value.title, API_URL)
+  const improved = await aiImproveText(newTodo.value.title)
   if (improved) {
     newTodo.value.title = improved
   }
@@ -801,11 +800,11 @@ function handleExportSelectedAsTxt() {
 }
 
 function handleExportData() {
-  exportData(API_URL)
+  exportData()
 }
 
 function handleImportData() {
-  importData(API_URL, async () => {
+  importData(async () => {
     await Promise.all([
       todoStore.fetchTodos(),
       tagStore.fetchTags()

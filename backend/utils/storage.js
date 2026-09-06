@@ -19,7 +19,8 @@ export async function initDataFile() {
       users: [{ id: 1, username: 'admin', password: await hashPassword('admin') }],
       todos: [],
       tags: [],
-      todoOrder: []
+      todoOrder: [],
+      sessions: []
     }
     await fs.writeFile(DATA_FILE, JSON.stringify(initialData, null, 2))
   }

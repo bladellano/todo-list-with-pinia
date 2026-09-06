@@ -1,15 +1,16 @@
 import { ref } from 'vue'
+import { apiFetch } from '../utils/api'
 
 export function useAI() {
   const isImprovingText = ref(false)
 
-  const improveText = async (text, apiUrl) => {
+  const improveText = async (text) => {
     if (!text.trim() || isImprovingText.value) return null
     
     isImprovingText.value = true
     
     try {
-      const response = await fetch(`${apiUrl}/api/ai/improve-text`, {
+      const response = await apiFetch('/ai/improve-text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })

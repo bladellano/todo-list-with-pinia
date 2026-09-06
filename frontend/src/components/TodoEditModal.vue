@@ -225,6 +225,7 @@
 <script setup>
 import { ref } from 'vue'
 import { getTagColor } from '../utils/colors'
+import { apiFetch } from '../utils/api'
 import { useMarkdown } from '../composables/useMarkdown'
 import { useModal } from '../composables/useModal'
 import EmailInput from './EmailInput.vue'
@@ -272,8 +273,7 @@ async function improveText() {
   isImprovingText.value = true
   
   try {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const response = await fetch(`${API_URL}/api/ai/improve-text`, {
+    const response = await apiFetch('/ai/improve-text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: editForm.value.title })
@@ -301,8 +301,7 @@ async function improveDescription() {
   isImprovingDescription.value = true
   
   try {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const response = await fetch(`${API_URL}/api/ai/improve-text`, {
+    const response = await apiFetch('/ai/improve-text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: editForm.value.description })

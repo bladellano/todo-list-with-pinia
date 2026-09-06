@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`
+import { apiFetch } from '../utils/api'
 
 export const useTodoStore = defineStore('todo', () => {
   const todos = ref([])
@@ -11,12 +10,10 @@ export const useTodoStore = defineStore('todo', () => {
     let result = []
     
     if (customOrder.value.length === 0) {
-      // Ordenação padrão por data de criação (DESC)
       result = [...todos.value].sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       )
     } else {
-      // Ordenação personalizada
       const orderedTodos = []
       const todoMap = new Map(todos.value.map(t => [t.id, t]))
       
@@ -27,13 +24,10 @@ export const useTodoStore = defineStore('todo', () => {
         }
       })
       
-      // Adicionar todos que não estão na ordem personalizada
       todoMap.forEach(todo => orderedTodos.push(todo))
-      
       result = orderedTodos
     }
     
-    // Separar pinned e não pinned, mantendo ordem
     const pinned = result.filter(t => t.pinned)
     const notPinned = result.filter(t => !t.pinned)
     
@@ -42,11 +36,10 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function fetchTodos() {
     try {
-      const response = await fetch(`${API_URL}/todos`)
+      const response = await apiFetch('/todos')
       todos.value = await response.json()
       
-      // Buscar ordem personalizada
-      const orderResponse = await fetch(`${API_URL}/todos/order`)
+      const orderResponse = await apiFetch('/todos/order')
       customOrder.value = await orderResponse.json()
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error)
@@ -55,7 +48,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function addTodo(todo) {
     try {
-      const response = await fetch(`${API_URL}/todos`, {
+      const response = await apiFetch('/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(todo)
@@ -70,14 +63,13 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function updateTodo(id, updates) {
     try {
-      // Se estiver marcando como concluída, adiciona a data
       if (updates.done === true) {
         updates.completedAt = new Date().toISOString()
       } else if (updates.done === false) {
         updates.completedAt = null
       }
       
-      const response = await fetch(`${API_URL}/todos/${id}`, {
+      const response = await apiFetch(`/todos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -97,7 +89,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function deleteTodo(id) {
     try {
-      await fetch(`${API_URL}/todos/${id}`, { method: 'DELETE' })
+      await apiFetch(`/todos/${id}`, { method: 'DELETE' })
       todos.value = todos.value.filter(t => t.id !== id)
       customOrder.value = customOrder.value.filter(todoId => todoId !== id)
       await saveOrder()
@@ -113,7 +105,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function saveOrder() {
     try {
-      await fetch(`${API_URL}/todos/order`, {
+      await apiFetch('/todos/order', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order: customOrder.value })
@@ -125,22 +117,14 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function moveToTop(id) {
     try {
-      // 1. Fixar a tarefa
       await updateTodo(id, { pinned: true })
       
-      // 2. Mover para o topo da ordem customizada
       if (customOrder.value.length === 0) {
-        // Se não há ordem customizada, criar uma com todos os IDs
         customOrder.value = todos.value.map(t => t.id)
       }
       
-      // Remover o ID da posição atual
       customOrder.value = customOrder.value.filter(todoId => todoId !== id)
-      
-      // Adicionar no início
       customOrder.value.unshift(id)
-      
-      // Salvar nova ordem
       await saveOrder()
     } catch (error) {
       console.error('Erro ao mover para o topo:', error)
@@ -149,18 +133,17 @@ export const useTodoStore = defineStore('todo', () => {
 
   async function cloneTodo(todo) {
     try {
-      // Criar uma cópia da tarefa sem o ID e timestamps
       const clonedTodo = {
         title: `${todo.title} (Cópia)`,
         description: todo.description || '',
         tagIds: [...(todo.tagIds || [])],
-        done: false, // Nova tarefa sempre começa como não concluída
+        done: false,
         pinned: todo.pinned || false,
         notificable: todo.notificable || false,
-        archived: false // Nova tarefa nunca começa arquivada
+        archived: false
       }
       
-      const response = await fetch(`${API_URL}/todos`, {
+      const response = await apiFetch('/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clonedTodo)

@@ -102,8 +102,8 @@ function isActive(path) {
   return route.path === path
 }
 
-function handleLogout() {
-  authStore.logout()
+async function handleLogout() {
+  await authStore.logout()
   router.push('/login')
 }
 </script>

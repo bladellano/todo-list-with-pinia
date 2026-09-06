@@ -9,6 +9,7 @@ import { setupTodoRoutes } from './routes/todos.js'
 import { setupTagRoutes } from './routes/tags.js'
 import { setupDataRoutes } from './routes/data.js'
 import { setupAIRoutes } from './routes/ai.js'
+import { requireSession, isPublicApiRoute } from './middleware/sessionAuth.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,6 +38,13 @@ const HOST = resolveHost()
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
+
+app.use(async (req, res, next) => {
+  if (!req.path.startsWith('/api/') || isPublicApiRoute(req)) {
+    return next()
+  }
+  return requireSession(req, res, next)
+})
 
 // Configurar rotas
 setupAuthRoutes(app)

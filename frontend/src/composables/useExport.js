@@ -1,3 +1,5 @@
+import { apiFetch } from '../utils/api'
+
 export function useExport() {
   const generateTimestamp = () => {
     const now = new Date()
@@ -57,9 +59,9 @@ export function useExport() {
     downloadFile(content, filename)
   }
 
-  const exportData = async (apiUrl) => {
+  const exportData = async () => {
     try {
-      const response = await fetch(`${apiUrl}/api/export`)
+      const response = await apiFetch('/export')
       
       if (!response.ok) throw new Error('Erro ao exportar dados')
       
@@ -80,7 +82,7 @@ export function useExport() {
     }
   }
 
-  const importData = async (apiUrl, onSuccess) => {
+  const importData = async (onSuccess) => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json,application/json'
@@ -103,7 +105,7 @@ export function useExport() {
           return
         }
 
-        const response = await fetch(`${apiUrl}/api/import`, {
+        const response = await apiFetch('/import', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(importedData)
@@ -125,7 +127,7 @@ export function useExport() {
         }
       } catch (error) {
         console.error('Erro ao importar:', error)
-        alert('❌ Erro ao importar. Verifique se o backend está rodando em ' + apiUrl)
+        alert('❌ Erro ao importar. Verifique se o backend está online e você está logado.')
       }
     }
     

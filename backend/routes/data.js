@@ -1,10 +1,11 @@
 import { readData, writeData } from '../utils/storage.js'
 import { ensurePasswordHashed } from '../utils/password.js'
 
-function stripPasswords(data) {
+function stripSensitiveFields(data) {
   return {
     ...data,
-    users: data.users.map(({ password, ...user }) => user)
+    users: data.users.map(({ password, ...user }) => user),
+    sessions: undefined
   }
 }
 
@@ -33,7 +34,7 @@ export function setupDataRoutes(app) {
     const data = await readData()
     res.setHeader('Content-Type', 'application/json')
     res.setHeader('Content-Disposition', `attachment; filename=todo-backup-${Date.now()}.json`)
-    res.json(stripPasswords(data))
+    res.json(stripSensitiveFields(data))
   })
 
   app.post('/api/import', async (req, res) => {
@@ -59,6 +60,8 @@ export function setupDataRoutes(app) {
       if (!importedData.todoOrder) {
         importedData.todoOrder = []
       }
+
+      importedData.sessions = []
 
       const currentData = await readData()
       importedData.users = await normalizeImportedUsers(importedData.users, currentData.users)

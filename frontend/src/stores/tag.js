@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`
+import { apiFetch } from '../utils/api'
 
 export const useTagStore = defineStore('tag', () => {
   const tags = ref([])
 
   async function fetchTags() {
     try {
-      const response = await fetch(`${API_URL}/tags`)
+      const response = await apiFetch('/tags')
       tags.value = await response.json()
     } catch (error) {
       console.error('Erro ao buscar tags:', error)
@@ -17,7 +16,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function addTag(tag) {
     try {
-      const response = await fetch(`${API_URL}/tags`, {
+      const response = await apiFetch('/tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tag)
@@ -32,7 +31,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function updateTag(id, updates) {
     try {
-      const response = await fetch(`${API_URL}/tags/${id}`, {
+      const response = await apiFetch(`/tags/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -52,7 +51,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function deleteTag(id) {
     try {
-      await fetch(`${API_URL}/tags/${id}`, { method: 'DELETE' })
+      await apiFetch(`/tags/${id}`, { method: 'DELETE' })
       tags.value = tags.value.filter(t => t.id !== id)
     } catch (error) {
       console.error('Erro ao deletar tag:', error)

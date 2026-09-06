@@ -1,14 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { clearAuthSession, getToken } from '../utils/api'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const lastError = ref('')
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value && !!getToken())
 
   async function login(username, password) {
     lastError.value = ''
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -25,9 +27,10 @@ export const useAuthStore = defineStore('auth', () => {
         return false
       }
 
-      if (data.success) {
+      if (data.success && data.token) {
         user.value = data.user
         localStorage.setItem('user', JSON.stringify(data.user))
+        localStorage.setItem('token', data.token)
         return true
       }
 
@@ -40,15 +43,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  async function logout() {
+    const token = getToken()
+    if (token) {
+      try {
+        await fetch(`${API_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      } catch (error) {
+        console.error('Erro ao encerrar sessão:', error)
+      }
+    }
+
     user.value = null
-    localStorage.removeItem('user')
+    clearAuthSession()
   }
 
   function loadUser() {
     const savedUser = localStorage.getItem('user')
-    if (savedUser) {
+    const token = getToken()
+    if (savedUser && token) {
       user.value = JSON.parse(savedUser)
+    } else {
+      clearAuthSession()
+      user.value = null
     }
   }
 
