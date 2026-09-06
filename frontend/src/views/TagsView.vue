@@ -45,7 +45,7 @@
             <div class="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
               <span
                 v-if="!editingTagId || editingTagId !== tag.id"
-                class="px-3 md:px-4 py-1.5 md:py-2 rounded-full font-medium text-sm md:text-base truncate"
+                class="px-3 md:px-4 py-1.5 md:py-2 rounded-md font-medium text-sm md:text-base truncate"
                 :class="[getTagColor(tag.name).bg, getTagColor(tag.name).text]"
               >
                 {{ tag.name }}

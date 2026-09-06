@@ -157,7 +157,7 @@
           <span
             v-for="tag in tags"
             :key="tag.id"
-            class="px-2 py-0.5 md:py-1 text-xs rounded-full border"
+            class="px-2 py-0.5 md:py-1 text-xs rounded-md border"
             :class="[getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border]"
           >
             {{ tag.name }}

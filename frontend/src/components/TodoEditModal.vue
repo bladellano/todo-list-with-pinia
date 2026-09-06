@@ -143,7 +143,7 @@
               :key="tag.id"
               type="button"
               @click="toggleTag(tag.id)"
-              class="px-3 py-1 rounded-full text-sm transition border-2"
+              class="px-3 py-1 rounded-md text-sm transition border-2"
               :class="editForm.tagIds.includes(tag.id) 
                 ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
                 : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"

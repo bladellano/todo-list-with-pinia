@@ -15,209 +15,195 @@
     
     <!-- Main Content -->
     <div v-else class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-          <h1 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Tarefas</h1>
-          <button
-            type="button"
-            @click="showForm = !showForm"
-            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-            :aria-label="showForm ? 'Recolher formulário' : 'Expandir formulário'"
-            :aria-expanded="showForm"
-          >
-            <svg 
-              class="w-5 h-5 transition-transform duration-200" 
-              :class="{ 'rotate-180': showForm }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+      <section class="workspace-panel">
+        <!-- Nova tarefa -->
+        <div class="workspace-section">
+          <header class="workspace-header">
+            <div class="workspace-header__text">
+              <h1 class="workspace-title">Nova tarefa</h1>
+              <p class="workspace-subtitle">Capture rapidamente o que precisa ser feito</p>
+            </div>
+            <button
+              type="button"
+              class="workspace-toggle"
+              @click="showForm = !showForm"
+              :aria-label="showForm ? 'Recolher formulário' : 'Expandir formulário'"
+              :aria-expanded="showForm"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <!-- Formulário para adicionar tarefa -->
-        <form v-show="showForm" @submit.prevent="handleAddTodo" class="space-y-4">
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <label for="new-todo-title" class="sr-only">Nova tarefa</label>
-              <input
-                id="new-todo-title"
-                ref="titleInputRef"
-                v-model="newTodo.title"
-                name="title"
-                type="text"
-                autocomplete="off"
-                placeholder="Digite uma nova tarefa…"
-                required
-                @input="handleTitleInput"
-                @focus="showSuggestions = true"
-                @blur="handleBlur"
-                @keydown.down.prevent="navigateSuggestions(1)"
-                @keydown.up.prevent="navigateSuggestions(-1)"
-                @keydown.enter.prevent="selectCurrentSuggestion"
-                @keydown.esc="closeSuggestions"
-                class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
-              />
-              
-              <!-- Dropdown de sugestões -->
-              <div
-                v-if="showSuggestions && filteredSuggestions.length > 0"
-                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto transition-colors"
-              >
-                <button
-                  v-for="(suggestion, index) in filteredSuggestions"
-                  :key="suggestion.id"
-                  type="button"
-                  @mousedown.prevent="selectSuggestion(suggestion.title)"
-                  class="w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-blue-50 transition border-b border-gray-100 last:border-b-0"
-                  :class="{ 'bg-blue-100': index === selectedSuggestionIndex }"
-                >
-                  <div class="font-medium text-gray-800">{{ suggestion.title }}</div>
-                  <div v-if="suggestion.description" class="text-gray-500 text-[10px] md:text-xs truncate mt-0.5">
-                    {{ suggestion.description }}
+              {{ showForm ? 'Recolher' : 'Expandir' }}
+            </button>
+          </header>
+
+          <form
+            v-show="showForm"
+            class="task-form"
+            @submit.prevent="handleAddTodo"
+          >
+            <div class="task-form__field">
+              <label for="new-todo-title" class="task-form__label">Título</label>
+              <div class="task-form__title-row">
+                <div class="task-form__input-wrap">
+                  <input
+                    id="new-todo-title"
+                    ref="titleInputRef"
+                    v-model="newTodo.title"
+                    name="title"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="O que você precisa fazer…"
+                    required
+                    :disabled="isAdding"
+                    @input="handleTitleInput"
+                    @focus="showSuggestions = true"
+                    @blur="handleBlur"
+                    @keydown.down.prevent="navigateSuggestions(1)"
+                    @keydown.up.prevent="navigateSuggestions(-1)"
+                    @keydown.enter.prevent="selectCurrentSuggestion"
+                    @keydown.esc="closeSuggestions"
+                    class="task-form__input"
+                  />
+
+                  <div
+                    v-if="showSuggestions && filteredSuggestions.length > 0"
+                    class="task-form__suggestions"
+                  >
+                    <button
+                      v-for="(suggestion, index) in filteredSuggestions"
+                      :key="suggestion.id"
+                      type="button"
+                      @mousedown.prevent="selectSuggestion(suggestion.title)"
+                      class="task-form__suggestion"
+                      :class="{ 'task-form__suggestion--active': index === selectedSuggestionIndex }"
+                    >
+                      <span class="task-form__suggestion-title">{{ suggestion.title }}</span>
+                      <span v-if="suggestion.description" class="task-form__suggestion-desc">
+                        {{ suggestion.description }}
+                      </span>
+                    </button>
                   </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="task-form__ai"
+                  @click="improveText"
+                  :disabled="!newTodo.title.trim() || isImprovingText"
+                  aria-label="Melhorar texto com IA"
+                >
+                  {{ isImprovingText ? 'Melhorando…' : 'Melhorar' }}
                 </button>
               </div>
             </div>
-            
-            <!-- Botão Melhorar com IA -->
+
+            <div class="task-form__field">
+              <span class="task-form__label">Descrição <span class="task-form__optional">(opcional)</span></span>
+              <div class="task-form__editor">
+                <div class="task-form__tabs" role="tablist" aria-label="Modo de edição da descrição">
+                  <button
+                    type="button"
+                    role="tab"
+                    :aria-selected="isPreviewTab"
+                    @click="setTab('preview')"
+                    class="task-form__tab"
+                    :class="{ 'task-form__tab--active': isPreviewTab }"
+                  >
+                    Preview
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    :aria-selected="isEditTab"
+                    @click="setTab('edit')"
+                    class="task-form__tab"
+                    :class="{ 'task-form__tab--active': isEditTab }"
+                  >
+                    Editar
+                  </button>
+                </div>
+
+                <textarea
+                  v-show="isEditTab"
+                  v-model="newTodo.description"
+                  aria-label="Descrição em Markdown"
+                  placeholder="Detalhes, links, checklist em Markdown…"
+                  rows="4"
+                  :disabled="isAdding"
+                  class="task-form__textarea"
+                />
+
+                <div
+                  v-show="isPreviewTab"
+                  class="task-form__preview prose prose-sm dark:prose-invert max-w-none"
+                  v-html="renderMarkdown(newTodo.description)"
+                />
+              </div>
+            </div>
+
+            <fieldset v-if="tagStore.tags.length > 0" class="task-form__fieldset">
+              <legend class="task-form__label mb-2">Tags</legend>
+              <div class="task-form__chips">
+                <button
+                  v-for="tag in tagStore.tags"
+                  :key="tag.id"
+                  type="button"
+                  @click="toggleTag(tag.id)"
+                  class="task-form__chip border-2"
+                  :class="newTodo.tagIds.includes(tag.id)
+                    ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'task-form__chip--active']
+                    : 'task-form__chip--idle'"
+                >
+                  {{ tag.name }}
+                </button>
+              </div>
+            </fieldset>
+
+            <div class="task-form__options">
+              <button
+                type="button"
+                class="task-form__pin"
+                :class="{ 'task-form__pin--active': newTodo.pinned }"
+                :aria-pressed="newTodo.pinned"
+                @click="newTodo.pinned = !newTodo.pinned"
+              >
+                Fixar no topo
+              </button>
+            </div>
+
             <button
-              type="button"
-              @click="improveText"
-              :disabled="!newTodo.title.trim() || isImprovingText"
-              aria-label="Melhorar texto com IA"
-              class="p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
-              :class="!newTodo.title.trim() || isImprovingText 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-yellow-500 text-white hover:bg-yellow-600'"
+              type="submit"
+              class="task-form__submit"
+              :disabled="isAdding || !newTodo.title.trim()"
             >
-              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
-              </svg>
-              <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              {{ isAdding ? 'Adicionando…' : 'Adicionar tarefa' }}
             </button>
-          </div>
-          
-          <!-- Campo de Descrição com Markdown -->
-          <div>
-            <!-- Abas -->
-            <div class="flex border-b border-gray-200 dark:border-gray-600 mb-2">
-              <button
-                type="button"
-                @click="setTab('preview')"
-                class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors border-b-2"
-                :class="isPreviewTab 
-                  ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' 
-                  : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
-              >
-                Preview
-              </button>
-              <button
-                type="button"
-                @click="setTab('edit')"
-                class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors border-b-2"
-                :class="isEditTab 
-                  ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' 
-                  : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
-              >
-                Editar
-              </button>
-            </div>
-            
-            <!-- Editor -->
-            <textarea
-              v-show="isEditTab"
-              v-model="newTodo.description"
-              aria-label="Descrição em Markdown"
-              placeholder="Descrição em Markdown (opcional)…"
-              rows="4"
-              class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
-            />
-            
-            <!-- Preview -->
-            <div
-              v-show="isPreviewTab"
-              class="w-full min-h-[100px] px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none"
-              v-html="renderMarkdown(newTodo.description)"
-            />
-          </div>
-          
-          <div class="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-2">
-            <label class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Tags:</label>
-            <div class="flex flex-wrap gap-1.5 md:gap-2">
-              <button
-                v-for="tag in tagStore.tags"
-                :key="tag.id"
-                type="button"
-                @click="toggleTag(tag.id)"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="newTodo.tagIds.includes(tag.id) 
-                  ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
-              >
-                {{ tag.name }}
-              </button>
-            </div>
-          </div>
-          
-          <!-- Opção de pinar -->
-          <div class="flex items-center space-x-2">
-            <input
-              id="pin-new-todo"
-              v-model="newTodo.pinned"
-              type="checkbox"
-              class="w-4 h-4 text-yellow-600 rounded focus:ring-2 focus:ring-yellow-500"
-            />
-            <label for="pin-new-todo" class="text-sm md:text-base text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-1">
-              <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a5.927 5.927 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707-.195-.195.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a5.922 5.922 0 0 1 1.013.16l3.134-3.133a2.772 2.772 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/>
-              </svg>
-              <span>Fixar no topo</span>
-            </label>
-          </div>
-          
-          <button
-            type="submit"
-            class="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm md:text-base font-medium"
-          >
-            Adicionar Tarefa
-          </button>
-        </form>
-      </div>
-      
-      <!-- Filtros -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Filtros</h2>
-          <button
-            type="button"
-            @click="showFilters = !showFilters"
-            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-            :aria-label="showFilters ? 'Recolher filtros' : 'Expandir filtros'"
-            :aria-expanded="showFilters"
-          >
-            <svg 
-              class="w-5 h-5 transition-transform duration-200" 
-              :class="{ 'rotate-180': showFilters }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
+          </form>
         </div>
-        
-        <div v-show="showFilters" class="mt-3 md:mt-4">
-          <!-- Campo de busca -->
-          <div class="mb-3 md:mb-4">
+
+        <div class="workspace-divider" role="separator" />
+
+        <!-- Filtros -->
+        <div class="workspace-section">
+          <header class="workspace-header">
+            <div class="workspace-header__text">
+              <div class="workspace-title-row">
+                <h2 class="workspace-title">Filtrar tarefas</h2>
+                <span v-if="activeFilterCount > 0" class="workspace-badge">{{ activeFilterCount }}</span>
+              </div>
+              <p class="workspace-subtitle">Encontre rapidamente o que importa</p>
+            </div>
+            <button
+              v-if="hasActiveFilters"
+              type="button"
+              class="workspace-clear"
+              @click="clearFilters"
+            >
+              Limpar
+            </button>
+          </header>
+
+          <div class="filters-bar">
             <label for="search-query" class="sr-only">Buscar tarefas</label>
-            <div class="relative">
+            <div class="filters-search">
               <input
                 id="search-query"
                 v-model="searchQuery"
@@ -225,71 +211,70 @@
                 type="search"
                 autocomplete="off"
                 placeholder="Buscar por título ou descrição…"
-                class="w-full px-3 md:px-4 py-2 pl-9 md:pl-10 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                class="filters-search__input"
               />
-              <svg class="absolute left-2.5 md:left-3 top-2.5 w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
             </div>
-          </div>
-          
-          <!-- Filtro por tags -->
-          <div v-if="tagStore.tags.length > 0" class="mb-3 md:mb-4">
-            <label class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Filtrar por tags:</label>
-            <div class="flex flex-wrap gap-1.5 md:gap-2">
-              <button
-                v-for="tag in tagStore.tags"
-                :key="tag.id"
-                type="button"
-                @click="toggleFilterTag(tag.id)"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="selectedFilterTags.includes(tag.id) 
-                  ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'font-medium']
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
-              >
-                {{ tag.name }}
-              </button>
-            </div>
-          </div>
-          
-          <!-- Filtro por envio de e-mail -->
-          <div class="mb-3 md:mb-4">
-            <label class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Filtrar por envio de e-mail:</label>
-            <div class="flex flex-wrap gap-1.5 md:gap-2">
-              <button
-                type="button"
-                @click="setSendFrequencyFilter('all')"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="sendFrequencyFilter === 'all' 
-                  ? 'bg-blue-500 text-white border-blue-600 font-medium'
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
-              >
-                Todas
-              </button>
-              <button
-                type="button"
-                @click="setSendFrequencyFilter('email-enabled')"
-                class="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm transition border-2"
-                :class="sendFrequencyFilter === 'email-enabled' 
-                  ? 'bg-orange-500 text-white border-orange-600 font-medium'
-                  : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'"
-              >
-                Com e-mail ativo
-              </button>
-            </div>
-          </div>
-          
-          <!-- Botão limpar filtros -->
-          <div v-if="searchQuery || selectedFilterTags.length > 0 || sendFrequencyFilter !== 'all'" class="flex justify-end">
+
             <button
-              @click="clearFilters"
-              class="text-sm text-gray-600 hover:text-gray-800 underline"
+              type="button"
+              class="filters-advanced-toggle"
+              @click="showFilters = !showFilters"
+              :aria-expanded="showFilters"
+              aria-controls="advanced-filters"
             >
-              Limpar filtros
+              {{ showFilters ? 'Ocultar filtros avançados' : 'Filtros avançados' }}
             </button>
           </div>
+
+          <div
+            v-show="showFilters"
+            id="advanced-filters"
+            class="filters-advanced"
+          >
+            <fieldset v-if="tagStore.tags.length > 0" class="filters-group">
+              <legend class="filters-group__label">Tags</legend>
+              <div class="filters-group__chips">
+                <button
+                  v-for="tag in tagStore.tags"
+                  :key="tag.id"
+                  type="button"
+                  @click="toggleFilterTag(tag.id)"
+                  class="task-form__chip border-2"
+                  :class="selectedFilterTags.includes(tag.id)
+                    ? [getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border, 'task-form__chip--active']
+                    : 'task-form__chip--idle'"
+                >
+                  {{ tag.name }}
+                </button>
+              </div>
+            </fieldset>
+
+            <fieldset class="filters-group">
+              <legend class="filters-group__label">Envio por e-mail</legend>
+              <div class="filters-segmented" role="group" aria-label="Filtrar por e-mail">
+                <button
+                  type="button"
+                  @click="setSendFrequencyFilter('all')"
+                  class="filters-segmented__btn"
+                  :class="{ 'filters-segmented__btn--active': sendFrequencyFilter === 'all' }"
+                  :aria-pressed="sendFrequencyFilter === 'all'"
+                >
+                  Todas
+                </button>
+                <button
+                  type="button"
+                  @click="setSendFrequencyFilter('email-enabled')"
+                  class="filters-segmented__btn"
+                  :class="{ 'filters-segmented__btn--active': sendFrequencyFilter === 'email-enabled' }"
+                  :aria-pressed="sendFrequencyFilter === 'email-enabled'"
+                >
+                  Com e-mail ativo
+                </button>
+              </div>
+            </fieldset>
+          </div>
         </div>
-      </div>
+      </section>
       
       <!-- Lista de tarefas -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 transition-colors">
@@ -550,10 +535,21 @@ const displayLimit = ref(20)
 const sentinelRef = ref(null)
 const showScrollToTop = ref(false)
 const isLoading = ref(true)
+const isAdding = ref(false)
 
 // Composables
 const { searchQuery, selectedFilterTags, sendFrequencyFilter, filteredTodos, toggleFilterTag, setSendFrequencyFilter, clearFilters } = 
   useTodoFilters(computed(() => todoStore.sortedTodos))
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (searchQuery.value.trim()) count++
+  count += selectedFilterTags.value.length
+  if (sendFrequencyFilter.value !== 'all') count++
+  return count
+})
+
+const hasActiveFilters = computed(() => activeFilterCount.value > 0)
 
 // Paginação: limita quantas tarefas são exibidas
 const paginatedTodos = computed(() => {
@@ -697,11 +693,12 @@ function toggleTag(tagId) {
 }
 
 async function handleAddTodo() {
-  if (newTodo.value.title.trim()) {
+  if (!newTodo.value.title.trim() || isAdding.value) return
+
+  isAdding.value = true
+  try {
     await todoStore.addTodo({ ...newTodo.value })
-    
     showSuccess('Tarefa adicionada com sucesso!')
-    
     newTodo.value = {
       title: '',
       description: '',
@@ -709,6 +706,8 @@ async function handleAddTodo() {
       done: false,
       pinned: false
     }
+  } finally {
+    isAdding.value = false
   }
 }
 
@@ -812,3 +811,207 @@ function handleImportData() {
   })
 }
 </script>
+
+<style scoped>
+.workspace-panel {
+  @apply bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-5 md:mb-6 overflow-hidden;
+}
+
+.workspace-section {
+  @apply p-4 md:p-6;
+}
+
+.workspace-divider {
+  @apply h-px bg-gray-200 dark:bg-gray-700 mx-4 md:mx-6;
+}
+
+.workspace-header {
+  @apply flex items-start justify-between gap-3 mb-4 md:mb-5;
+}
+
+.workspace-header__text {
+  @apply min-w-0;
+}
+
+.workspace-title-row {
+  @apply flex items-center gap-2;
+}
+
+.workspace-title {
+  @apply text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 tracking-tight;
+}
+
+.workspace-subtitle {
+  @apply text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5;
+}
+
+.workspace-badge {
+  @apply inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[11px] font-semibold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300;
+}
+
+.workspace-toggle {
+  @apply inline-flex items-center px-2.5 py-1.5 text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0;
+}
+
+.workspace-clear {
+  @apply text-xs md:text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-2 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0;
+}
+
+/* Task form */
+.task-form {
+  @apply space-y-4 md:space-y-5;
+}
+
+.task-form__field {
+  @apply space-y-1.5;
+}
+
+.task-form__label {
+  @apply block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+.task-form__optional {
+  @apply font-normal text-gray-400 dark:text-gray-500;
+}
+
+.task-form__title-row {
+  @apply flex items-stretch gap-2;
+}
+
+.task-form__input-wrap {
+  @apply relative flex-1 min-w-0;
+}
+
+.task-form__input {
+  @apply w-full px-3 py-2.5 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60;
+}
+
+.task-form__suggestions {
+  @apply absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto;
+}
+
+.task-form__suggestion {
+  @apply w-full text-left px-3 py-2.5 text-sm border-b border-gray-100 dark:border-gray-600 last:border-b-0 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:bg-blue-50 dark:focus-visible:bg-gray-600;
+}
+
+.task-form__suggestion--active {
+  @apply bg-blue-50 dark:bg-gray-600;
+}
+
+.task-form__suggestion-title {
+  @apply block font-medium text-gray-800 dark:text-gray-100;
+}
+
+.task-form__suggestion-desc {
+  @apply block text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5;
+}
+
+.task-form__ai {
+  @apply inline-flex items-center justify-center shrink-0 px-3 py-2.5 text-xs md:text-sm font-medium rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.task-form__editor {
+  @apply rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden bg-gray-50 dark:bg-gray-700/50;
+}
+
+.task-form__tabs {
+  @apply flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600;
+}
+
+.task-form__tab {
+  @apply flex-1 px-3 py-1.5 text-xs md:text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+}
+
+.task-form__tab--active {
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm;
+}
+
+.task-form__textarea {
+  @apply w-full px-3 md:px-4 py-3 text-sm md:text-base bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 resize-y min-h-[6rem] focus:outline-none disabled:opacity-60;
+}
+
+.task-form__preview {
+  @apply px-3 md:px-4 py-3 min-h-[6rem] text-sm md:text-base;
+}
+
+.task-form__fieldset {
+  @apply border-0 p-0 m-0;
+}
+
+.task-form__chips {
+  @apply flex flex-wrap gap-1.5 md:gap-2;
+}
+
+.task-form__chip {
+  @apply px-2.5 md:px-3 py-1 rounded-md text-xs md:text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+}
+
+.task-form__chip--idle {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600;
+}
+
+.task-form__chip--active {
+  @apply font-medium;
+}
+
+.task-form__options {
+  @apply flex flex-wrap gap-2;
+}
+
+.task-form__pin {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500;
+}
+
+.task-form__pin--active {
+  @apply border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400;
+}
+
+.task-form__submit {
+  @apply w-full py-2.5 px-4 rounded-lg text-sm md:text-base font-semibold text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Filters */
+.filters-bar {
+  @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+}
+
+.filters-search {
+  @apply relative flex-1 min-w-0;
+}
+
+.filters-search__input {
+  @apply w-full px-3 py-2.5 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.filters-advanced-toggle {
+  @apply inline-flex items-center justify-center px-3 py-2.5 text-xs md:text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0;
+}
+
+.filters-advanced {
+  @apply mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-4;
+}
+
+.filters-group {
+  @apply border-0 p-0 m-0;
+}
+
+.filters-group__label {
+  @apply block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+}
+
+.filters-group__chips {
+  @apply flex flex-wrap gap-1.5 md:gap-2;
+}
+
+.filters-segmented {
+  @apply inline-flex p-1 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600;
+}
+
+.filters-segmented__btn {
+  @apply px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+}
+
+.filters-segmented__btn--active {
+  @apply bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm;
+}
+</style>
