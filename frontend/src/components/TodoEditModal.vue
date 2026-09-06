@@ -1,15 +1,24 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-7xl">
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overscroll-contain"
+    @click.self="$emit('cancel')"
+  >
+    <div
+      ref="modalRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-todo-title"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-7xl max-h-[90vh] overflow-y-auto transition-colors"
+    >
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Editar Tarefa</h2>
+        <h2 id="edit-todo-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100 text-pretty">Editar Tarefa</h2>
         <button
           type="button"
           @click="handleClone"
-          class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center space-x-1.5"
-          title="Criar uma cópia desta tarefa"
+          aria-label="Criar uma cópia desta tarefa"
+          class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-purple-400"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
           </svg>
           <span class="text-sm">Clonar</span>
@@ -18,28 +27,31 @@
       
       <form @submit.prevent="handleSave" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="edit-todo-title-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Título
           </label>
           <div class="flex items-center gap-2">
             <input
+              id="edit-todo-title-input"
               v-model="editForm.title"
+              name="title"
               type="text"
+              autocomplete="off"
               required
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             <!-- Botão Melhorar com IA -->
             <button
               type="button"
               @click="improveText"
               :disabled="!editForm.title.trim() || isImprovingText"
-              class="p-2 rounded-lg transition flex items-center justify-center shrink-0"
+              aria-label="Melhorar texto com IA"
+              class="p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
               :class="!editForm.title.trim() || isImprovingText 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                 : 'bg-yellow-500 text-white hover:bg-yellow-600'"
-              title="Melhorar texto com IA"
             >
-              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
               </svg>
               <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -51,12 +63,12 @@
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="edit-todo-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Descrição
           </label>
           
           <!-- Abas -->
-          <div class="flex border-b border-gray-200 mb-2">
+          <div class="flex border-b border-gray-200 dark:border-gray-600 mb-2">
             <button
               type="button"
               @click="activeTab = 'preview'"
@@ -82,11 +94,12 @@
           <div class="flex items-start gap-2">
             <!-- Editor -->
             <textarea
+              id="edit-todo-description"
               v-show="activeTab === 'edit'"
               v-model="editForm.description"
-              placeholder="Descrição em Markdown (opcional)..."
+              placeholder="Descrição em Markdown (opcional)…"
               rows="4"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             
             <!-- Botão Melhorar Descrição com IA -->
@@ -95,7 +108,8 @@
               type="button"
               @click="improveDescription"
               :disabled="!editForm.description.trim() || isImprovingDescription"
-              class="p-2 rounded-lg transition flex items-center justify-center shrink-0"
+              aria-label="Melhorar descrição com IA"
+              class="p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
               :class="!editForm.description.trim() || isImprovingDescription 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                 : 'bg-yellow-500 text-white hover:bg-yellow-600'"
@@ -114,15 +128,15 @@
           <!-- Preview -->
           <div
             v-show="activeTab === 'preview'"
-            class="w-full min-h-[100px] px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 prose prose-sm max-w-none"
+            class="w-full min-h-[100px] px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none"
             v-html="renderMarkdown(editForm.description)"
           />
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Tags
-          </label>
+          </span>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="tag in allTags"
@@ -146,7 +160,7 @@
             id="done-checkbox"
             class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
           />
-          <label for="done-checkbox" class="text-sm font-medium text-gray-700">
+          <label for="done-checkbox" class="text-sm font-medium text-gray-700 dark:text-gray-300">
             Tarefa concluída
           </label>
         </div>
@@ -158,13 +172,13 @@
             id="notificable-checkbox"
             class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
           />
-          <label for="notificable-checkbox" class="text-sm font-medium text-gray-700">
+          <label for="notificable-checkbox" class="text-sm font-medium text-gray-700 dark:text-gray-300">
             Habilitar notificações (n8n)
           </label>
         </div>
         
         <!-- Envio por E-mail -->
-        <div class="border-t pt-4 space-y-4">
+        <div class="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-4">
           <div class="flex items-center space-x-2">
             <input
               v-model="editForm.sendByEmail"
@@ -172,7 +186,7 @@
               id="send-email-checkbox"
               class="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
             />
-            <label for="send-email-checkbox" class="text-sm font-medium text-gray-700">
+            <label for="send-email-checkbox" class="text-sm font-medium text-gray-700 dark:text-gray-300">
               Enviar por e-mail (via n8n)
             </label>
           </div>
@@ -210,17 +224,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import { marked } from 'marked'
 import { getTagColor } from '../utils/colors'
+import { useMarkdown } from '../composables/useMarkdown'
+import { useModal } from '../composables/useModal'
 import EmailInput from './EmailInput.vue'
-
-// Configurar marked
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  headerIds: false,
-  mangle: false
-})
 
 const props = defineProps({
   todo: {
@@ -234,6 +241,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel', 'clone'])
+
+const { renderMarkdown } = useMarkdown()
+const { modalRef } = useModal(() => emit('cancel'))
 
 // Estado da aba ativa
 const activeTab = ref('preview')
@@ -254,20 +264,6 @@ const editForm = ref({
 // Estado para melhorar texto com IA
 const isImprovingText = ref(false)
 const isImprovingDescription = ref(false)
-
-// Função para renderizar Markdown
-function renderMarkdown(text) {
-  if (!text || !text.trim()) {
-    return '<p class="text-gray-400 italic">Nenhum conteúdo para visualizar</p>'
-  }
-  
-  try {
-    return marked(text)
-  } catch (error) {
-    console.error('Erro ao renderizar markdown:', error)
-    return '<p class="text-red-500">Erro ao renderizar markdown</p>'
-  }
-}
 
 // Função para melhorar texto com IA
 async function improveText() {

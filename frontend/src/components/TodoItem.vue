@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-all cursor-pointer flex flex-col"
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow cursor-pointer flex flex-col"
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
@@ -25,9 +25,9 @@
         <input
           type="checkbox"
           :checked="selected"
+          :aria-label="`Selecionar tarefa ${todo.title}`"
           @change.stop="$emit('toggle-select', todo.id)"
           class="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-          title="Selecionar para exportar"
         />
       </div>
       
@@ -38,13 +38,13 @@
           <!-- Botão Done/Undone -->
           <button
             @click="$emit('toggle-done', todo)"
-            class="p-1 md:p-1.5 rounded transition"
+            class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
             :class="todo.done 
               ? 'text-green-600 hover:bg-green-50' 
               : 'text-gray-400 hover:bg-gray-50'"
-            :title="todo.done ? 'Marcar como pendente' : 'Marcar como concluída'"
+            :aria-label="todo.done ? 'Marcar como pendente' : 'Marcar como concluída'"
           >
-            <svg v-if="todo.done" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <svg v-if="todo.done" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
             </svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,23 +55,23 @@
           <!-- Botão Para o Topo -->
           <button
             @click="$emit('move-to-top', todo.id)"
-            class="p-1 md:p-1.5 rounded transition text-purple-600 hover:bg-purple-50"
-            title="Fixar e mover para o topo"
+            aria-label="Fixar e mover para o topo"
+            class="p-1 md:p-1.5 rounded transition-colors text-purple-600 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
             </svg>
           </button>
           
           <button
             @click="$emit('toggle-pin', todo.id)"
-            class="p-1 md:p-1.5 rounded transition"
+            class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-yellow-500"
             :class="todo.pinned 
               ? 'text-yellow-600 hover:bg-yellow-50' 
               : 'text-gray-400 hover:bg-gray-50'"
-            :title="todo.pinned ? 'Desafixar' : 'Fixar no topo'"
+            :aria-label="todo.pinned ? 'Desafixar' : 'Fixar no topo'"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a5.927 5.927 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707-.195-.195.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a5.922 5.922 0 0 1 1.013.16l3.134-3.133a2.772 2.772 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/>
             </svg>
           </button>
@@ -79,33 +79,33 @@
           <!-- Botão Arquivar/Desarquivar -->
           <button
             @click="$emit('toggle-archive', todo.id)"
-            class="p-1 md:p-1.5 rounded transition"
+            class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
             :class="isArchived 
               ? 'text-blue-600 hover:bg-blue-50' 
               : 'text-gray-400 hover:bg-gray-50'"
-            :title="isArchived ? 'Desarquivar' : 'Arquivar'"
+            :aria-label="isArchived ? 'Desarquivar' : 'Arquivar'"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
             </svg>
           </button>
           
           <button
             @click="$emit('edit', todo)"
-            class="p-1 md:p-1.5 text-blue-600 hover:bg-blue-50 rounded transition"
-            title="Editar"
+            aria-label="Editar tarefa"
+            class="p-1 md:p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
             </svg>
           </button>
           
           <button
             @click="$emit('delete', todo.id)"
-            class="p-1 md:p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-            title="Excluir"
+            aria-label="Excluir tarefa"
+            class="p-1 md:p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
           </button>
@@ -130,8 +130,8 @@
               @blur="saveTitle"
               @keyup.enter="saveTitle"
               @keyup.esc="cancelEdit"
-              class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              autofocus
+              class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 dark:border-blue-400 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              :aria-label="`Editar título: ${todo.title}`"
             />
           </div>
           

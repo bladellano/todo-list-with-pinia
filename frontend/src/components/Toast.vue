@@ -3,11 +3,12 @@
     <div
       v-if="isVisible"
       class="fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-      role="alert"
+      role="status"
+      aria-live="polite"
     >
       <div class="flex items-center p-4">
         <!-- Ícone -->
-        <div class="flex-shrink-0">
+        <div class="flex-shrink-0" aria-hidden="true">
           <svg
             v-if="type === 'success'"
             class="w-5 h-5 text-green-500"
@@ -68,9 +69,10 @@
         <!-- Botão fechar -->
         <button
           @click="close"
-          class="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-500 focus:outline-none"
+          aria-label="Fechar notificação"
+          class="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-500 focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
         >
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
             <path
               fill-rule="evenodd"
               d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -91,7 +93,7 @@
             'bg-yellow-500': type === 'warning',
             'bg-blue-500': type === 'info'
           }"
-          class="h-full transition-all duration-100 ease-linear"
+          class="h-full transition-[width] duration-100 ease-linear"
           :style="{ width: `${progress}%` }"
         />
       </div>
@@ -129,11 +131,10 @@ const close = () => {
   isVisible.value = false
   setTimeout(() => {
     emit('close')
-  }, 300) // Tempo da animação
+  }, 300)
 }
 
 onMounted(() => {
-  // Iniciar barra de progresso
   const step = 100 / (props.duration / 100)
   progressInterval = setInterval(() => {
     progress.value -= step
@@ -143,7 +144,6 @@ onMounted(() => {
     }
   }, 100)
 
-  // Auto-fechar após duração
   closeTimeout = setTimeout(() => {
     close()
   }, props.duration)
@@ -158,7 +158,7 @@ onUnmounted(() => {
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .toast-enter-from {

@@ -2,11 +2,11 @@
   <AppLayout>
     <div class="max-w-4xl mx-auto px-4 md:px-0">
       <!-- Header -->
-      <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Tarefas</h1>
-            <p class="text-xs md:text-sm text-gray-600 mt-1">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 text-pretty">Tarefas</h1>
+            <p class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
               {{ archivedTodos.length }} {{ archivedTodos.length === 1 ? 'tarefa arquivada' : 'tarefas arquivadas' }}
             </p>
           </div>
@@ -25,8 +25,8 @@
       </div>
       
       <!-- Lista de tarefas arquivadas -->
-      <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
-        <div v-if="archivedTodos.length === 0" class="text-center py-8 text-gray-500 text-sm md:text-base">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 transition-colors">
+        <div v-if="archivedTodos.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400 text-sm md:text-base">
           Nenhuma tarefa arquivada ainda.
         </div>
         

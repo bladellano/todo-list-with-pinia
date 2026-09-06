@@ -4,33 +4,38 @@
  */
 export function apiKeyAuth(req, res, next) {
   const apiKey = process.env.API_KEY
-  
-  // Se não houver API_KEY configurada, permite acesso (modo desenvolvimento)
+  const isProduction = process.env.NODE_ENV === 'production'
+
   if (!apiKey) {
-    console.warn('⚠️  API_KEY não configurada - acesso público ao endpoint')
+    if (isProduction) {
+      return res.status(503).json({
+        error: 'Serviço indisponível',
+        message: 'API_KEY não configurada. Configure a variável de ambiente em produção.'
+      })
+    }
+    console.warn('⚠️  API_KEY não configurada - acesso público ao endpoint (apenas desenvolvimento)')
     return next()
   }
-  
+
   const authHeader = req.headers.authorization
-  
+
   if (!authHeader) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       error: 'Não autorizado',
-      message: 'Header Authorization não encontrado' 
+      message: 'Header Authorization não encontrado'
     })
   }
-  
-  // Suporta tanto "Bearer TOKEN" quanto "TOKEN"
-  const token = authHeader.startsWith('Bearer ') 
-    ? authHeader.slice(7) 
+
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7)
     : authHeader
-  
+
   if (token !== apiKey) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       error: 'Não autorizado',
-      message: 'API Key inválida' 
+      message: 'API Key inválida'
     })
   }
-  
+
   next()
 }

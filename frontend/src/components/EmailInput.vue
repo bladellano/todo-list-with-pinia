@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+    <label :for="inputId" class="text-sm font-medium text-gray-700 dark:text-gray-300">
       {{ label }}
     </label>
     
@@ -21,10 +21,11 @@
         <span>{{ email }}</span>
         <button
           type="button"
+          :aria-label="`Remover e-mail ${email}`"
           @click.stop="removeEmail(index)"
-          class="hover:bg-blue-600 rounded-full p-0.5 transition"
+          class="hover:bg-blue-600 rounded-full p-0.5 transition-colors focus-visible:ring-2 focus-visible:ring-white"
         >
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
@@ -32,11 +33,16 @@
       
       <!-- Input -->
       <input
+        :id="inputId"
         ref="input"
         :value="inputValue"
+        name="email"
         @input="handleInput($event.target.value)"
         @keydown="handleKeydown"
-        type="text"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        spellcheck="false"
         :placeholder="emails.length === 0 ? placeholder : ''"
         class="flex-1 min-w-[120px] outline-none bg-transparent text-sm text-gray-900 dark:text-gray-100"
       />
@@ -67,11 +73,15 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Digite um e-mail e pressione Enter'
+    default: 'Digite um e-mail e pressione Enter…'
   },
   hint: {
     type: String,
     default: 'Separe múltiplos e-mails com ; ou pressione Enter/Tab'
+  },
+  inputId: {
+    type: String,
+    default: 'email-input'
   }
 })
 

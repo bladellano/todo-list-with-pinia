@@ -87,7 +87,7 @@
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[100px]">{{ tag.name }}</span>
                 <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
-                    class="h-2 rounded-full transition-all duration-300"
+                    class="h-2 rounded-full transition-[width] duration-300"
                     :class="getTagBarColor(tag.name)"
                     :style="{ width: `${(tag.count / totalTodos) * 100}%` }"
                   ></div>
@@ -143,26 +143,26 @@
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">Concluídas</span>
-              <span class="text-lg font-bold text-green-600">{{ completedTodos }} ({{ Math.round((completedTodos / totalTodos) * 100) }}%)</span>
+              <span class="text-lg font-bold text-green-600 tabular-nums">{{ completedTodos }} ({{ totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0 }}%)</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div class="bg-green-500 h-3 rounded-full transition-all duration-300" :style="{ width: `${(completedTodos / totalTodos) * 100}%` }"></div>
+              <div class="bg-green-500 h-3 rounded-full transition-[width] duration-300" :style="{ width: `${totalTodos > 0 ? (completedTodos / totalTodos) * 100 : 0}%` }"></div>
             </div>
 
             <div class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">Pendentes</span>
-              <span class="text-lg font-bold text-orange-600">{{ pendingTodos }} ({{ Math.round((pendingTodos / totalTodos) * 100) }}%)</span>
+              <span class="text-lg font-bold text-orange-600 tabular-nums">{{ pendingTodos }} ({{ totalTodos > 0 ? Math.round((pendingTodos / totalTodos) * 100) : 0 }}%)</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div class="bg-orange-500 h-3 rounded-full transition-all duration-300" :style="{ width: `${(pendingTodos / totalTodos) * 100}%` }"></div>
+              <div class="bg-orange-500 h-3 rounded-full transition-[width] duration-300" :style="{ width: `${totalTodos > 0 ? (pendingTodos / totalTodos) * 100 : 0}%` }"></div>
             </div>
 
             <div class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">Arquivadas</span>
-              <span class="text-lg font-bold text-gray-600">{{ archivedTodos }} ({{ Math.round((archivedTodos / totalTodos) * 100) }}%)</span>
+              <span class="text-lg font-bold text-gray-600 tabular-nums">{{ archivedTodos }} ({{ totalTodos > 0 ? Math.round((archivedTodos / totalTodos) * 100) : 0 }}%)</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div class="bg-gray-500 h-3 rounded-full transition-all duration-300" :style="{ width: `${(archivedTodos / totalTodos) * 100}%` }"></div>
+              <div class="bg-gray-500 h-3 rounded-full transition-[width] duration-300" :style="{ width: `${totalTodos > 0 ? (archivedTodos / totalTodos) * 100 : 0}%` }"></div>
             </div>
           </div>
         </div>

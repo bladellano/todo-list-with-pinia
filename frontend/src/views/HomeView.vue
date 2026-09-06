@@ -7,7 +7,7 @@
           <div class="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
         </div>
         <div class="text-center">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Carregando tarefas...</h2>
+          <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Carregando tarefas…</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Aguarde enquanto preparamos tudo para você</p>
         </div>
       </div>
@@ -16,12 +16,14 @@
     <!-- Main Content -->
     <div v-else class="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1920px]">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
-        <div class="flex items-center justify-between cursor-pointer mb-4" @click="showForm = !showForm">
+        <div class="flex items-center justify-between mb-4">
           <h1 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Tarefas</h1>
           <button
             type="button"
-            class="p-1 text-gray-600 hover:text-gray-800 transition"
-            :title="showForm ? 'Recolher formulário' : 'Expandir formulário'"
+            @click="showForm = !showForm"
+            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            :aria-label="showForm ? 'Recolher formulário' : 'Expandir formulário'"
+            :aria-expanded="showForm"
           >
             <svg 
               class="w-5 h-5 transition-transform duration-200" 
@@ -39,11 +41,15 @@
         <form v-show="showForm" @submit.prevent="handleAddTodo" class="space-y-4">
           <div class="flex items-center gap-2">
             <div class="relative flex-1">
+              <label for="new-todo-title" class="sr-only">Nova tarefa</label>
               <input
+                id="new-todo-title"
                 ref="titleInputRef"
                 v-model="newTodo.title"
+                name="title"
                 type="text"
-                placeholder="Digite uma nova tarefa..."
+                autocomplete="off"
+                placeholder="Digite uma nova tarefa…"
                 required
                 @input="handleTitleInput"
                 @focus="showSuggestions = true"
@@ -81,13 +87,13 @@
               type="button"
               @click="improveText"
               :disabled="!newTodo.title.trim() || isImprovingText"
-              class="p-2 rounded-lg transition flex items-center justify-center shrink-0"
+              aria-label="Melhorar texto com IA"
+              class="p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
               :class="!newTodo.title.trim() || isImprovingText 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                 : 'bg-yellow-500 text-white hover:bg-yellow-600'"
-              title="Melhorar texto com IA"
             >
-              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
               </svg>
               <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -127,7 +133,8 @@
             <textarea
               v-show="isEditTab"
               v-model="newTodo.description"
-              placeholder="Descrição em Markdown (opcional)..."
+              aria-label="Descrição em Markdown"
+              placeholder="Descrição em Markdown (opcional)…"
               rows="4"
               class="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
             />
@@ -185,12 +192,14 @@
       
       <!-- Filtros -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
-        <div class="flex items-center justify-between cursor-pointer" @click="showFilters = !showFilters">
+        <div class="flex items-center justify-between mb-4">
           <h2 class="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100">Filtros</h2>
           <button
             type="button"
-            class="p-1 text-gray-600 hover:text-gray-800 transition"
-            :title="showFilters ? 'Recolher filtros' : 'Expandir filtros'"
+            @click="showFilters = !showFilters"
+            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            :aria-label="showFilters ? 'Recolher filtros' : 'Expandir filtros'"
+            :aria-expanded="showFilters"
           >
             <svg 
               class="w-5 h-5 transition-transform duration-200" 
@@ -207,14 +216,18 @@
         <div v-show="showFilters" class="mt-3 md:mt-4">
           <!-- Campo de busca -->
           <div class="mb-3 md:mb-4">
+            <label for="search-query" class="sr-only">Buscar tarefas</label>
             <div class="relative">
               <input
+                id="search-query"
                 v-model="searchQuery"
-                type="text"
-                placeholder="Buscar por título ou descrição..."
-                class="w-full px-3 md:px-4 py-2 pl-9 md:pl-10 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                name="search"
+                type="search"
+                autocomplete="off"
+                placeholder="Buscar por título ou descrição…"
+                class="w-full px-3 md:px-4 py-2 pl-9 md:pl-10 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
-              <svg class="absolute left-2.5 md:left-3 top-2.5 w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="absolute left-2.5 md:left-3 top-2.5 w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
@@ -291,8 +304,9 @@
               <button
                 @click="setViewMode('list')"
                 :class="viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow' : 'hover:bg-gray-200 dark:hover:bg-gray-600'"
-                class="p-1.5 rounded transition"
-                title="Visualização em lista"
+                class="p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
+                aria-label="Visualização em lista"
+                :aria-pressed="viewMode === 'list'"
               >
                 <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -437,7 +451,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Carregando mais tarefas...</span>
+            <span>Carregando mais tarefas…</span>
           </div>
         </div>
       </div>
@@ -484,10 +498,10 @@
       <button
         v-if="showScrollToTop"
         @click="scrollToTop"
-        class="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-200 hover:scale-110"
-        title="Voltar ao topo"
+        aria-label="Voltar ao topo"
+        class="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-blue-400"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
         </svg>
       </button>

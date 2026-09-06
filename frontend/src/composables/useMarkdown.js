@@ -1,13 +1,19 @@
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
-// Configurar marked para ser mais seguro
 marked.setOptions({
   breaks: true,
   gfm: true,
   headerIds: false,
   mangle: false
 })
+
+function sanitizeHtml(html) {
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true }
+  })
+}
 
 export function useMarkdown() {
   const activeTab = ref('preview')
@@ -16,9 +22,9 @@ export function useMarkdown() {
     if (!text || !text.trim()) {
       return '<p class="text-gray-400 italic">Nenhum conteúdo para visualizar</p>'
     }
-    
+
     try {
-      return marked(text)
+      return sanitizeHtml(marked.parse(text))
     } catch (error) {
       console.error('Erro ao renderizar markdown:', error)
       return '<p class="text-red-500">Erro ao renderizar markdown</p>'

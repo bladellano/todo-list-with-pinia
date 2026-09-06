@@ -95,16 +95,28 @@ export function useExport() {
       
       try {
         const text = await file.text()
-        const importedData = JSON.parse(text)
-        
+        let importedData
+        try {
+          importedData = JSON.parse(text)
+        } catch {
+          alert('❌ Arquivo JSON inválido. Verifique se selecionou o backup correto.')
+          return
+        }
+
         const response = await fetch(`${apiUrl}/api/import`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(importedData)
         })
-        
-        const result = await response.json()
-        
+
+        let result
+        try {
+          result = await response.json()
+        } catch {
+          alert('❌ Erro ao comunicar com o servidor. Verifique se o backend está rodando.')
+          return
+        }
+
         if (result.success) {
           alert(`✅ Dados importados com sucesso!\n\n📊 Estatísticas:\n- ${result.stats.users} usuário(s)\n- ${result.stats.todos} tarefa(s)\n- ${result.stats.tags} tag(s)`)
           onSuccess()
@@ -113,7 +125,7 @@ export function useExport() {
         }
       } catch (error) {
         console.error('Erro ao importar:', error)
-        alert('❌ Erro ao processar arquivo. Verifique se é um arquivo JSON válido.')
+        alert('❌ Erro ao importar. Verifique se o backend está rodando em ' + apiUrl)
       }
     }
     

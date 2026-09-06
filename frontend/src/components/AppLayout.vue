@@ -1,5 +1,11 @@
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md"
+    >
+      Ir para o conteúdo principal
+    </a>
     <!-- Navbar fixo no topo -->
     <nav class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-50 transition-colors">
       <div class="container mx-auto px-3 md:px-4">
@@ -42,15 +48,15 @@
             <!-- Botão de toggle de tema -->
             <button
               @click="themeStore.toggleTheme()"
-              class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-              :title="themeStore.currentTheme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'"
+              class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
+              :aria-label="themeStore.currentTheme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'"
             >
               <!-- Ícone Sol (Light mode) -->
-              <svg v-if="themeStore.currentTheme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="themeStore.currentTheme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
               </svg>
               <!-- Ícone Lua (Dark mode) -->
-              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
               </svg>
             </button>
@@ -70,7 +76,7 @@
     </nav>
     
     <!-- Padding-top para compensar o navbar fixo -->
-    <main class="container mx-auto px-0 md:px-4 py-4 md:py-8 pt-16 md:pt-20">
+    <main id="main-content" class="container mx-auto px-0 md:px-4 py-4 md:py-8 pt-16 md:pt-20">
       <slot />
     </main>
   </div>

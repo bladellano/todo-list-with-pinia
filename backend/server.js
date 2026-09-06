@@ -17,10 +17,10 @@ dotenv.config({ path: path.join(__dirname, '../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
-const HOST = process.env.SERVER_HOST || 'localhost'
+const HOST = (process.env.SERVER_HOST || 'localhost').replace(/^https?:\/\//, '')
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 // Configurar rotas
 setupAuthRoutes(app)
@@ -31,6 +31,6 @@ setupAIRoutes(app, process.env.OPENAI_API_KEY, process.env.OPENAI_MODEL)
 
 // Iniciar servidor
 await initDataFile()
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor rodando em ${HOST}:${PORT}`)
 })
