@@ -4,10 +4,10 @@
     :class="{ 
       'opacity-60': todo.done,
       'ring-2 ring-blue-500 dark:ring-blue-400': selected,
-      'border-yellow-400 dark:border-yellow-500 border-2': todo.pinned && !todo.notificable,
-      'bg-orange-50 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600': todo.sendByEmail && !todo.pinned && !todo.notificable,
-      'bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned && !todo.notificable,
-      'notificable-card': todo.notificable,
+      'border-2 border-yellow-400 dark:border-yellow-500': todo.pinned && !todo.notificable,
+      'border-2 border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/20': todo.sendByEmail && !todo.pinned && !todo.notificable,
+      'border-2 border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20': todo.sendByEmail && todo.pinned && !todo.notificable,
+      'notificable-card border-2': todo.notificable,
       'max-h-[500px]': viewMode !== 'list'
     }"
     @click="handleCardClick"
@@ -15,7 +15,7 @@
     <div class="flex items-start space-x-2 md:space-x-3">
       <!-- Drag handle (apenas em modo lista) -->
       <div v-if="viewMode === 'list'" class="drag-handle cursor-move pt-1 flex-shrink-0 hidden md:block">
-        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
         </svg>
       </div>
@@ -35,28 +35,26 @@
       <div class="flex-1 min-w-0 overflow-y-auto">
         <!-- Botões de ação no topo -->
         <div class="flex items-center justify-end space-x-0.5 md:space-x-1 mb-2">
-          <!-- Botão Done/Undone -->
           <button
-            @click="$emit('toggle-done', todo)"
+            @click.stop="$emit('toggle-done', todo)"
             class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
             :class="todo.done 
-              ? 'text-green-600 hover:bg-green-50' 
-              : 'text-gray-400 hover:bg-gray-50'"
+              ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' 
+              : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'"
             :aria-label="todo.done ? 'Marcar como pendente' : 'Marcar como concluída'"
           >
             <svg v-if="todo.done" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
             </svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </button>
           
-          <!-- Botão Para o Topo -->
           <button
-            @click="$emit('move-to-top', todo.id)"
+            @click.stop="$emit('move-to-top', todo.id)"
             aria-label="Fixar e mover para o topo"
-            class="p-1 md:p-1.5 rounded transition-colors text-purple-600 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500"
+            class="p-1 md:p-1.5 rounded transition-colors text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 focus-visible:ring-2 focus-visible:ring-purple-500"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
@@ -64,11 +62,11 @@
           </button>
           
           <button
-            @click="$emit('toggle-pin', todo.id)"
+            @click.stop="$emit('toggle-pin', todo.id)"
             class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-yellow-500"
             :class="todo.pinned 
-              ? 'text-yellow-600 hover:bg-yellow-50' 
-              : 'text-gray-400 hover:bg-gray-50'"
+              ? 'text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' 
+              : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'"
             :aria-label="todo.pinned ? 'Desafixar' : 'Fixar no topo'"
           >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -76,13 +74,12 @@
             </svg>
           </button>
           
-          <!-- Botão Arquivar/Desarquivar -->
           <button
-            @click="$emit('toggle-archive', todo.id)"
+            @click.stop="$emit('toggle-archive', todo.id)"
             class="p-1 md:p-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
             :class="isArchived 
-              ? 'text-blue-600 hover:bg-blue-50' 
-              : 'text-gray-400 hover:bg-gray-50'"
+              ? 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20' 
+              : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'"
             :aria-label="isArchived ? 'Desarquivar' : 'Arquivar'"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -91,9 +88,9 @@
           </button>
           
           <button
-            @click="$emit('edit', todo)"
+            @click.stop="$emit('edit', todo)"
             aria-label="Editar tarefa"
-            class="p-1 md:p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
+            class="p-1 md:p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -101,9 +98,9 @@
           </button>
           
           <button
-            @click="$emit('delete', todo.id)"
+            @click.stop="$emit('delete', todo.id)"
             aria-label="Excluir tarefa"
-            class="p-1 md:p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+            class="p-1 md:p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -116,8 +113,8 @@
           <div class="flex-1 min-w-0">
             <h3
               v-if="!isEditingTitle"
-              @dblclick="startEditingTitle"
-              class="font-semibold text-gray-800 dark:text-gray-100 text-sm md:text-base break-words cursor-text"
+              @dblclick.stop="startEditingTitle"
+              class="font-serif font-semibold text-gray-800 dark:text-gray-100 text-sm md:text-base break-words cursor-text"
               :class="{ 'line-through': todo.done }"
               title="Clique duas vezes para editar"
             >
@@ -130,18 +127,18 @@
               @blur="saveTitle"
               @keyup.enter="saveTitle"
               @keyup.esc="cancelEdit"
-              class="w-full px-2 py-1 text-sm md:text-base font-semibold border-2 border-blue-500 dark:border-blue-400 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              @click.stop
+              class="w-full px-2 py-1 font-serif text-sm md:text-base font-semibold border-2 border-blue-500 dark:border-blue-400 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               :aria-label="`Editar título: ${todo.title}`"
             />
           </div>
           
-          <!-- Ícone de notificação -->
           <div 
             v-if="todo.notificable" 
             class="flex-shrink-0 pt-0.5"
             title="Notificações habilitadas"
           >
-            <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
             </svg>
           </div>
@@ -160,16 +157,16 @@
           <span
             v-for="tag in tags"
             :key="tag.id"
-            class="px-2 py-0.5 md:py-1 text-xs rounded-full"
-            :class="[getTagColor(tag.name).bg, getTagColor(tag.name).text]"
+            class="px-2 py-0.5 md:py-1 text-xs rounded-full border"
+            :class="[getTagColor(tag.name).bg, getTagColor(tag.name).text, getTagColor(tag.name).border]"
           >
             {{ tag.name }}
           </span>
         </div>
         
-        <div class="text-[10px] md:text-xs text-gray-400 mt-2 space-y-0.5">
+        <div class="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 mt-2 space-y-0.5">
           <div class="hidden md:block">Criada: {{ formatDate(todo.createdAt) }}</div>
-          <div v-if="todo.done && todo.completedAt" class="text-green-600 font-medium">
+          <div v-if="todo.done && todo.completedAt" class="text-green-600 dark:text-green-400 font-medium">
             ✓ Concluída: {{ formatDate(todo.completedAt) }}
           </div>
         </div>
@@ -211,12 +208,10 @@ const isEditingTitle = ref(false)
 const editedTitle = ref('')
 
 function handleCardClick(event) {
-  // Não abrir modal em modo lista (permitir duplo clique para edição)
   if (props.viewMode === 'list') {
     return
   }
   
-  // Não abrir modal se clicar em botões, checkbox, drag handle ou input de edição
   const clickedElement = event.target
   const isInteractiveElement = clickedElement.closest('button') || 
                                 clickedElement.closest('input') || 
@@ -262,7 +257,6 @@ function formatDate(dateString) {
 .notificable-card {
   background-color: #9333ea !important;
   border-color: #7e22ce !important;
-  border-width: 2px;
 }
 
 .notificable-card * {
