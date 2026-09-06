@@ -75,7 +75,7 @@ async function handleLogin() {
   if (success) {
     router.push('/')
   } else {
-    error.value = 'Usuário ou senha incorretos'
+    error.value = authStore.lastError || 'Usuário ou senha incorretos'
   }
   
   loading.value = false

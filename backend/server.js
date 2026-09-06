@@ -31,6 +31,11 @@ setupAIRoutes(app, process.env.OPENAI_API_KEY, process.env.OPENAI_MODEL)
 
 // Iniciar servidor
 await initDataFile()
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'todo-backend' })
+})
+
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor rodando em ${HOST}:${PORT}`)
 })
