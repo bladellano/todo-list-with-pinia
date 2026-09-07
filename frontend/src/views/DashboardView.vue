@@ -84,7 +84,7 @@
           <div class="space-y-3">
             <div v-for="tag in topTags" :key="tag.id" class="flex items-center justify-between">
               <div class="flex items-center space-x-3 flex-1">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[100px]">{{ tag.name }}</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0 truncate">{{ tag.name }}</span>
                 <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     class="h-2 rounded-full transition-[width] duration-300"

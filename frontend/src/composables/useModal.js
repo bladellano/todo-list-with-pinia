@@ -1,6 +1,24 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { onKeyStroke } from '@vueuse/core'
 
+let lockCount = 0
+let previousOverflow = ''
+
+function lockBodyScroll() {
+  if (lockCount === 0) {
+    previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  lockCount += 1
+}
+
+function unlockBodyScroll() {
+  lockCount = Math.max(0, lockCount - 1)
+  if (lockCount === 0) {
+    document.body.style.overflow = previousOverflow
+  }
+}
+
 export function useModal(onClose) {
   const modalRef = ref(null)
 
@@ -30,6 +48,7 @@ export function useModal(onClose) {
   }
 
   onMounted(() => {
+    lockBodyScroll()
     const focusable = modalRef.value?.querySelector(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
@@ -38,6 +57,7 @@ export function useModal(onClose) {
   })
 
   onUnmounted(() => {
+    unlockBodyScroll()
     document.removeEventListener('keydown', trapFocus)
   })
 

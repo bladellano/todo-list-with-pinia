@@ -137,7 +137,8 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--login-bg);
   color: var(--login-foreground);
 }

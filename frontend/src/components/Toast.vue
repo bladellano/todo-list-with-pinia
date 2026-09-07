@@ -2,7 +2,7 @@
   <Transition name="toast">
     <div
       v-if="isVisible"
-      class="fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+      class="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[55] sm:inset-x-auto sm:right-4 sm:max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
       role="status"
       aria-live="polite"
     >

@@ -481,10 +481,10 @@
       leave-to-class="opacity-0 scale-75"
     >
       <button
-        v-if="showScrollToTop"
+        v-if="showScrollToTop && !viewingTodo && !editingTodo"
         @click="scrollToTop"
         aria-label="Voltar ao topo"
-        class="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="fixed right-4 z-40 p-3 min-h-11 min-w-11 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-blue-400 bottom-[max(5rem,calc(env(safe-area-inset-bottom)+4.5rem))] sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
@@ -883,7 +883,7 @@ function handleImportData() {
 }
 
 .task-form__input {
-  @apply w-full px-3 py-2.5 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60;
+  @apply w-full px-3 py-2.5 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60;
 }
 
 .task-form__suggestions {
@@ -927,11 +927,11 @@ function handleImportData() {
 }
 
 .task-form__textarea {
-  @apply w-full px-3 md:px-4 py-3 text-sm md:text-base bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 resize-y min-h-[6rem] focus:outline-none disabled:opacity-60;
+  @apply w-full px-3 md:px-4 py-3 text-base bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 resize-y min-h-[6rem] max-h-48 overflow-y-auto focus:outline-none disabled:opacity-60;
 }
 
 .task-form__preview {
-  @apply px-3 md:px-4 py-3 min-h-[6rem] text-sm md:text-base;
+  @apply px-3 md:px-4 py-3 min-h-[6rem] max-h-48 overflow-y-auto text-sm md:text-base;
 }
 
 .task-form__fieldset {
@@ -980,7 +980,7 @@ function handleImportData() {
 }
 
 .filters-search__input {
-  @apply w-full px-3 py-2.5 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  @apply w-full px-3 py-2.5 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 }
 
 .filters-advanced-toggle {
@@ -1004,11 +1004,11 @@ function handleImportData() {
 }
 
 .filters-segmented {
-  @apply inline-flex p-1 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600;
+  @apply flex w-full p-1 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600;
 }
 
 .filters-segmented__btn {
-  @apply px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+  @apply flex-1 px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
 }
 
 .filters-segmented__btn--active {

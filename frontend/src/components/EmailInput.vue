@@ -44,7 +44,7 @@
         autocomplete="email"
         spellcheck="false"
         :placeholder="emails.length === 0 ? placeholder : ''"
-        class="flex-1 min-w-[120px] outline-none bg-transparent text-sm text-gray-900 dark:text-gray-100"
+        class="flex-1 min-w-[120px] outline-none bg-transparent text-base text-gray-900 dark:text-gray-100"
       />
     </div>
     
