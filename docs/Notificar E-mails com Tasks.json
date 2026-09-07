@@ -3,30 +3,38 @@
   "nodes": [
     {
       "parameters": {
-        "functionCode": "// Filtrar tarefas com sendByEmail = true\nconst filtered = items.filter(item => {\n  const task = item.json;\n  return task.sendByEmail === true && \n         task.done !== true && \n         task.archived !== true &&\n         Array.isArray(task.emails) &&\n         task.emails.length > 0;\n});\n\nreturn filtered;"
+        "url": "https://cdns-systems-todo-server.ccuexx.easypanel.host/api/external/email-digests",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
       },
-      "name": "Filter Tasks",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
+      "name": "Get Email Digests",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
       "position": [
         112,
         -352
       ],
-      "id": "ececf653-0235-407e-9ac4-586f3de3ca6a"
+      "id": "f4fe08bf-b8fa-4a85-88e9-bde962c078fd",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GG36vwNbcaQxm534",
+          "name": "Header Auth - Todo"
+        }
+      }
     },
     {
       "parameters": {
-        "functionCode": "// Função para converter Markdown básico para HTML\nfunction markdownToHtml(markdown) {\n  if (!markdown) return '';\n  \n  let html = markdown;\n  \n  // Headers\n  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');\n  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');\n  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');\n  \n  // Bold\n  html = html.replace(/\\*\\*(.*?)\\*\\*/gim, '<strong>$1</strong>');\n  \n  // Italic\n  html = html.replace(/\\*(.*?)\\*/gim, '<em>$1</em>');\n  \n  // Links\n  html = html.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href=\"$2\">$1</a>');\n  \n  // Code blocks\n  html = html.replace(/```([\\s\\S]*?)```/gim, '<pre><code>$1</code></pre>');\n  \n  // Inline code\n  html = html.replace(/`([^`]+)`/gim, '<code>$1</code>');\n  \n  // Lists (simple)\n  html = html.replace(/^\\- (.+)$/gim, '<li>$1</li>');\n  html = html.replace(/(<li>.*<\\/li>)/s, '<ul>$1</ul>');\n  \n  // Quebras de linha\n  html = html.replace(/\\n\\n/g, '</p><p>');\n  html = html.replace(/\\n/g, '<br>');\n  \n  // Envolver em parágrafo se não tiver tags de bloco\n  if (!html.match(/^<(h[1-6]|ul|ol|pre|div)/)) {\n    html = '<p>' + html + '</p>';\n  }\n  \n  return html;\n}\n\n// Processar cada tarefa\nconst output = [];\n\nfor (const item of items) {\n  const task = item.json;\n  \n  // Verificar horário se for envio diário\n  if (task.sendFrequency === 'daily') {\n    const now = new Date();\n    const currentHour = now.getHours().toString().padStart(2, '0');\n    const currentMinute = now.getMinutes().toString().padStart(2, '0');\n    const currentTime = `${currentHour}:${currentMinute}`;\n    const taskTime = task.sendTime || '09:00';\n    \n    const [taskHour, taskMinute] = taskTime.split(':').map(Number);\n    const [currHour, currMinute] = currentTime.split(':').map(Number);\n    \n    const taskMinutes = taskHour * 60 + taskMinute;\n    const currentMinutes = currHour * 60 + currMinute;\n    \n    // // Buffer de 5 minutos\n    // if (Math.abs(currentMinutes - taskMinutes) > 5) {\n    //   continue; // Pular esta tarefa\n    // }\n  }\n  \n  // Converter descrição de Markdown para HTML\n  const descriptionHtml = markdownToHtml(task.description || 'Sem descrição');\n  \n  // Criar um item para cada e-mail\n  for (const email of task.emails) {\n    output.push({\n      json: {\n        to: email,\n        subject: task.title,\n        text: task.description || 'Sem descrição',\n        html: `\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n            <h2 style=\"color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;\">${task.title}</h2>\n            <div style=\"margin: 20px 0; line-height: 1.6;\">\n              ${descriptionHtml}\n            </div>\n            <hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;\">\n            <small style=\"color: #6b7280;\">ID da Tarefa: ${task.id}</small>\n          </div>\n        `,\n        taskId: task.id,\n        sendFrequency: task.sendFrequency\n      }\n    });\n  }\n}\n\nreturn output;"
+        "functionCode": "const payload = items[0]?.json;\nconst digests = Array.isArray(payload) ? payload : items.map(item => item.json);\n\nreturn digests\n  .filter(digest => digest && digest.to)\n  .map(digest => ({ json: digest }));"
       },
-      "name": "Process Emails",
+      "name": "Split Digests",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
         336,
         -352
       ],
-      "id": "018dd40c-bdc7-4b90-92f2-18c536cfb959",
-      "alwaysOutputData": false
+      "id": "018dd40c-bdc7-4b90-92f2-18c536cfb959"
     },
     {
       "parameters": {
@@ -55,41 +63,6 @@
     },
     {
       "parameters": {
-        "url": "https://cdns-systems-todo-server.ccuexx.easypanel.host/api/external/todos",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "sendByEmail",
-              "value": "true"
-            },
-            {
-              "name": "done",
-              "value": "false"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Get Todos",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        -112,
-        -352
-      ],
-      "id": "f4fe08bf-b8fa-4a85-88e9-bde962c078fd",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "GG36vwNbcaQxm534",
-          "name": "Header Auth - Todo"
-        }
-      }
-    },
-    {
-      "parameters": {
         "rule": {
           "interval": [
             {
@@ -102,7 +75,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -336,
+        -112,
         -352
       ],
       "id": "7645641f-5696-41a9-926a-4685e421baa1",
@@ -111,18 +84,18 @@
   ],
   "pinData": {},
   "connections": {
-    "Filter Tasks": {
+    "Get Email Digests": {
       "main": [
         [
           {
-            "node": "Process Emails",
+            "node": "Split Digests",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Process Emails": {
+    "Split Digests": {
       "main": [
         [
           {
@@ -133,22 +106,11 @@
         ]
       ]
     },
-    "Get Todos": {
-      "main": [
-        [
-          {
-            "node": "Filter Tasks",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Schedule Trigger": {
       "main": [
         [
           {
-            "node": "Get Todos",
+            "node": "Get Email Digests",
             "type": "main",
             "index": 0
           }

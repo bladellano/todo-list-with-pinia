@@ -72,14 +72,33 @@ A funcionalidade utiliza flags específicas que podem ser consultadas via API:
 
 ### Endpoint para Consulta
 
-Use o endpoint com filtro para obter tarefas que devem ser enviadas por e-mail:
+Use o endpoint de digests prontos para envio (recomendado):
+
+```bash
+GET /api/external/email-digests
+
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "http://localhost:3001/api/external/email-digests"
+```
+
+Resposta (um item por destinatário, tabela só com títulos):
+
+```json
+[
+  {
+    "to": "gerente@empresa.com",
+    "subject": "TaskMaster — 3 tarefa(s) pendente(s)",
+    "text": "TaskMaster — Tarefas pendentes\n\n1. Reunião Importante\n2. Relatório Diário\n...",
+    "html": "<div>...<table>...</table></div>",
+    "taskCount": 3
+  }
+]
+```
+
+Para listar tarefas brutas (sem montar e-mail):
 
 ```bash
 GET /api/external/todos
-
-# Exemplo: buscar tarefas com envio por e-mail ativo
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "http://localhost:3001/api/external/todos"
 ```
 
 ### Estrutura de Resposta
@@ -106,20 +125,17 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 ### Workflow n8n Sugerido
 
 ```
-1. [Cron] Trigger diário (ex: a cada 5 minutos)
+1. [Cron] Trigger diário
    ↓
-2. [HTTP Request] GET /api/external/todos
+2. [HTTP Request] GET /api/external/email-digests
    ↓
-3. [Filter] Filtra tarefas com sendByEmail = true
+3. [Function] Split Digests (se necessário)
    ↓
-4. [Switch] Verifica sendFrequency
-   ├─ "once" → Envia uma vez e marca como enviado
-   └─ "daily" → Verifica se horário atual == sendTime
-       ↓
-5. [Email] Envia e-mail
-   - Para: emails[]
-   - Assunto: title
-   - Corpo: description (renderizar Markdown)
+4. [Email] Envia e-mail
+   - Para: to
+   - Assunto: subject
+   - Corpo HTML: html (tabela com títulos das tarefas, sem descrição)
+   - Corpo texto: text
 ```
 
 ### Exemplo de Código n8n (HTTP Request)
@@ -159,18 +175,20 @@ return tasksToSend.filter(item => {
 
 ### Exemplo de Envio de E-mail
 
-**Send Email Node (n8n)**:
+O backend monta automaticamente uma **tabela HTML** com os **títulos** das tarefas (sem descrição), agrupando por destinatário:
+
+| # | Título |
+|---|--------|
+| 1 | Reunião Importante |
+| 2 | Relatório Diário |
+
+**Send Email Node (n8n)** — campos mapeados do digest:
 
 ```javascript
-// Para cada tarefa
-const task = $json;
-
-return {
-  to: task.emails.join(','),
-  subject: task.title,
-  body: task.description || 'Sem descrição',
-  html: marked(task.description || 'Sem descrição') // Se usar Markdown
-};
+to: {{ $json.to }}
+subject: {{ $json.subject }}
+text: {{ $json.text }}
+html: {{ $json.html }}
 ```
 
 ## 📊 Campos de Dados
