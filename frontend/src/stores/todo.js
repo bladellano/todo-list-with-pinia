@@ -55,6 +55,11 @@ export const useTodoStore = defineStore('todo', () => {
       })
       const newTodo = await response.json()
       todos.value.push(newTodo)
+
+      if (newTodo.pinned) {
+        await prependToOrder(newTodo.id)
+      }
+
       return newTodo
     } catch (error) {
       console.error('Erro ao adicionar tarefa:', error)
@@ -115,17 +120,20 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  async function prependToOrder(id) {
+    if (customOrder.value.length === 0) {
+      customOrder.value = todos.value.map(t => t.id)
+    }
+
+    customOrder.value = customOrder.value.filter(todoId => todoId !== id)
+    customOrder.value.unshift(id)
+    await saveOrder()
+  }
+
   async function moveToTop(id) {
     try {
       await updateTodo(id, { pinned: true })
-      
-      if (customOrder.value.length === 0) {
-        customOrder.value = todos.value.map(t => t.id)
-      }
-      
-      customOrder.value = customOrder.value.filter(todoId => todoId !== id)
-      customOrder.value.unshift(id)
-      await saveOrder()
+      await prependToOrder(id)
     } catch (error) {
       console.error('Erro ao mover para o topo:', error)
     }
@@ -155,6 +163,11 @@ export const useTodoStore = defineStore('todo', () => {
       
       const newTodo = await response.json()
       todos.value.push(newTodo)
+
+      if (newTodo.pinned) {
+        await prependToOrder(newTodo.id)
+      }
+
       return newTodo
     } catch (error) {
       console.error('Erro ao clonar tarefa:', error)
