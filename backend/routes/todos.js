@@ -1,5 +1,4 @@
 import { readData, writeData } from '../utils/storage.js'
-import { buildEmailDigests } from '../utils/emailDigest.js'
 import { apiKeyAuth } from '../middleware/apiAuth.js'
 
 export function setupTodoRoutes(app) {
@@ -38,13 +37,6 @@ export function setupTodoRoutes(app) {
     }
     
     res.json(todos)
-  })
-
-  // Digests prontos para envio por e-mail (n8n / TaskMaster)
-  app.get('/api/external/email-digests', apiKeyAuth, async (req, res) => {
-    const data = await readData()
-    const digests = buildEmailDigests(data.todos)
-    res.json(digests)
   })
 
   // Listar todos

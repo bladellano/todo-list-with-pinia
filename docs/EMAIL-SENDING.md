@@ -72,33 +72,12 @@ A funcionalidade utiliza flags específicas que podem ser consultadas via API:
 
 ### Endpoint para Consulta
 
-Use o endpoint de digests prontos para envio (recomendado):
-
-```bash
-GET /api/external/email-digests
-
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "http://localhost:3001/api/external/email-digests"
-```
-
-Resposta (um item por destinatário, tabela só com títulos):
-
-```json
-[
-  {
-    "to": "gerente@empresa.com",
-    "subject": "TaskMaster — 3 tarefa(s) pendente(s)",
-    "text": "TaskMaster — Tarefas pendentes\n\n1. Reunião Importante\n2. Relatório Diário\n...",
-    "html": "<div>...<table>...</table></div>",
-    "taskCount": 3
-  }
-]
-```
-
-Para listar tarefas brutas (sem montar e-mail):
-
 ```bash
 GET /api/external/todos
+
+# Exemplo: buscar tarefas notificáveis ou com envio por e-mail
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "http://localhost:3001/api/external/todos?notificable=true&done=false"
 ```
 
 ### Estrutura de Resposta
@@ -127,16 +106,30 @@ GET /api/external/todos
 ```
 1. [Cron] Trigger diário
    ↓
-2. [HTTP Request] GET /api/external/email-digests
+2. [HTTP Request] GET /api/external/todos?notificable=true&done=false
    ↓
-3. [Function] Split Digests (se necessário)
+3. [Code] Formatar Email — monta subject + body HTML (tabela só com títulos)
    ↓
 4. [Email] Envia e-mail
-   - Para: to
-   - Assunto: subject
-   - Corpo HTML: html (tabela com títulos das tarefas, sem descrição)
-   - Corpo texto: text
+   - Assunto: {{ $json.subject }}
+   - Corpo HTML: {{ $json.body }}
 ```
+
+### Node "Formatar Email"
+
+A formatação do corpo do e-mail fica no n8n, no node **Formatar Email**. O código atualizado está em [`docs/n8n/formatar-email.js`](n8n/formatar-email.js).
+
+Comportamento:
+- Exibe **somente o título** de cada tarefa (sem descrição)
+- Lista as tarefas em **tabela HTML** (`#` + `Título`), compatível com clientes de e-mail
+- Escapa HTML nos títulos para evitar quebra de layout
+
+Exemplo visual do corpo:
+
+| # | Título |
+|---|--------|
+| 1 | Reunião com Cliente |
+| 2 | Compreender doc do deploy.yml |
 
 ### Exemplo de Código n8n (HTTP Request)
 
@@ -175,20 +168,11 @@ return tasksToSend.filter(item => {
 
 ### Exemplo de Envio de E-mail
 
-O backend monta automaticamente uma **tabela HTML** com os **títulos** das tarefas (sem descrição), agrupando por destinatário:
+**Send Email Node (n8n)** — após o node Formatar Email:
 
-| # | Título |
-|---|--------|
-| 1 | Reunião Importante |
-| 2 | Relatório Diário |
-
-**Send Email Node (n8n)** — campos mapeados do digest:
-
-```javascript
-to: {{ $json.to }}
-subject: {{ $json.subject }}
-text: {{ $json.text }}
-html: {{ $json.html }}
+```
+Assunto: {{ $json.subject }}
+HTML:    {{ $json.body }}
 ```
 
 ## 📊 Campos de Dados
