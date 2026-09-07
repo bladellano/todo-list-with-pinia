@@ -3,7 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { initDataFile } from './utils/storage.js'
+import { initDataFile, DATA_FILE } from './utils/storage.js'
 import { setupAuthRoutes } from './routes/auth.js'
 import { setupTodoRoutes } from './routes/todos.js'
 import { setupTagRoutes } from './routes/tags.js'
@@ -62,4 +62,5 @@ app.get('/api/health', (_req, res) => {
 
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor rodando em ${HOST}:${PORT}`)
+  console.log(`📁 Dados persistidos em: ${DATA_FILE}`)
 })

@@ -15,6 +15,12 @@ export async function initDataFile() {
     await fs.mkdir(dataDir, { recursive: true })
     await fs.access(DATA_FILE)
   } catch {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(
+        `⚠️  data.json não encontrado — criando arquivo vazio em ${DATA_FILE}. ` +
+        'Se você tinha dados antes, o volume persistente provavelmente não está montado neste caminho.'
+      )
+    }
     const initialData = {
       users: [{ id: 1, username: 'admin', password: await hashPassword('admin') }],
       todos: [],
