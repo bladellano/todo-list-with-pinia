@@ -12,6 +12,7 @@
     "@vueuse/core": "^14.1.0",
     "dompurify": "^3.4.14",
     "marked": "^17.0.1",
+    "mermaid": "^11.17.2",
     "pinia": "^3.0.4",
     "sortablejs": "^1.15.6",
     "vue": "^3.5.24",

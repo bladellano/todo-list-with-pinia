@@ -50,10 +50,7 @@
 
     <div v-if="todo.description" class="mb-6">
       <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Descrição</h3>
-      <div
-        class="text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none"
-        v-html="renderMarkdown(todo.description)"
-      />
+      <MarkdownContent :content="todo.description" />
     </div>
 
     <div v-if="tags && tags.length > 0" class="mb-6">
@@ -112,10 +109,8 @@
 
 <script setup>
 import { getTagColor } from '../utils/colors'
-import { useMarkdown } from '../composables/useMarkdown'
 import BaseModal from './BaseModal.vue'
-
-const { renderMarkdown } = useMarkdown()
+import MarkdownContent from './MarkdownContent.vue'
 
 defineProps({
   todo: {

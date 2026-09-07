@@ -119,10 +119,10 @@
           </button>
         </div>
 
-        <div
-          v-show="activeTab === 'preview'"
-          class="w-full min-h-[6rem] max-h-[40vh] overflow-y-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none"
-          v-html="renderMarkdown(editForm.description)"
+        <MarkdownContent
+          v-if="activeTab === 'preview'"
+          :content="editForm.description"
+          content-class="w-full min-h-[6rem] max-h-[40vh] overflow-y-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none"
         />
       </div>
 
@@ -219,9 +219,9 @@
 import { ref } from 'vue'
 import { getTagColor } from '../utils/colors'
 import { apiFetch } from '../utils/api'
-import { useMarkdown } from '../composables/useMarkdown'
 import EmailInput from './EmailInput.vue'
 import BaseModal from './BaseModal.vue'
+import MarkdownContent from './MarkdownContent.vue'
 
 const props = defineProps({
   todo: {
@@ -235,8 +235,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel', 'clone'])
-
-const { renderMarkdown } = useMarkdown()
 
 const activeTab = ref('preview')
 

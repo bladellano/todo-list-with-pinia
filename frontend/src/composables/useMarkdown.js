@@ -2,11 +2,32 @@ import { ref, computed } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
-marked.setOptions({
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+marked.use({
   breaks: true,
   gfm: true,
   headerIds: false,
-  mangle: false
+  mangle: false,
+  renderer: {
+    code({ text, lang, escaped }) {
+      const language = lang?.trim().split(/\s+/)[0]
+      const safeText = escaped ? text : escapeHtml(text)
+
+      if (language === 'mermaid') {
+        return `<pre class="mermaid">${safeText}</pre>\n`
+      }
+
+      const langClass = language ? ` class="language-${language}"` : ''
+      return `<pre><code${langClass}>${safeText}</code></pre>\n`
+    }
+  }
 })
 
 function sanitizeHtml(html) {

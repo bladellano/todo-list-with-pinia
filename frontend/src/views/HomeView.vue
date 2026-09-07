@@ -131,10 +131,10 @@
                   class="task-form__textarea"
                 />
 
-                <div
-                  v-show="isPreviewTab"
-                  class="task-form__preview prose prose-sm dark:prose-invert max-w-none"
-                  v-html="renderMarkdown(newTodo.description)"
+                <MarkdownContent
+                  v-if="isPreviewTab"
+                  :content="newTodo.description"
+                  content-class="task-form__preview prose prose-sm dark:prose-invert max-w-none"
                 />
               </div>
             </div>
@@ -510,6 +510,7 @@ import AppLayout from '../components/AppLayout.vue'
 import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
 import TodoViewModal from '../components/TodoViewModal.vue'
+import MarkdownContent from '../components/MarkdownContent.vue'
 import Toast from '../components/Toast.vue'
 
 const todoStore = useTodoStore()
@@ -572,7 +573,7 @@ const { initSortable } = useDragAndDrop(
   todoStore.updateOrder
 )
 const { toasts, success: showSuccess, remove: removeToast } = useToast()
-const { activeTab, isEditTab, isPreviewTab, setTab, renderMarkdown } = useMarkdown()
+const { activeTab, isEditTab, isPreviewTab, setTab } = useMarkdown()
 
 const filteredSuggestions = suggestions.filteredSuggestions
 const showSuggestions = suggestions.showSuggestions
