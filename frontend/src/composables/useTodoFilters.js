@@ -1,12 +1,12 @@
 import { ref, computed } from 'vue'
 
-export function useTodoFilters(todos) {
+export function useTodoFilters(todos, { archivedOnly = false } = {}) {
   const searchQuery = ref('')
   const selectedFilterTags = ref([])
   const sendFrequencyFilter = ref('all') // 'all', 'daily', 'email-enabled'
 
   const filteredTodos = computed(() => {
-    let result = todos.value.filter(todo => !todo.archived)
+    let result = todos.value.filter(todo => archivedOnly ? todo.archived : !todo.archived)
     
     // Filtro por busca
     if (searchQuery.value.trim()) {
