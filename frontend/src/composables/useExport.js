@@ -37,20 +37,23 @@ export function useExport() {
 
     const selected = allTodos.filter(t => selectedTodos.includes(t.id))
     
-    let content = '=== LISTA DE TAREFAS ===\n\n'
+    let content = 'CHECKLIST TO-DO/PLANNING/RESUME/TROUBLESHOOTING\n\n'
     
-    selected.forEach((todo, index) => {
+    selected.forEach((todo) => {
       const title = removeEmojis(todo.title)
-      const formattedTitle = todo.done ? `~~${title}~~` : title
       
-      content += `${index + 1}. ${formattedTitle}\n`
-      
-      if (todo.done && todo.completedAt) {
-        const date = new Date(todo.completedAt).toLocaleString('pt-BR')
-        content += `   Concluida em: ${date}\n`
+      if (todo.done) {
+        let line = `- ${title}`
+        if (todo.completedAt) {
+          const date = new Date(todo.completedAt).toLocaleString('pt-BR')
+          line += ` - Concluido ✔️ ${date}`
+        } else {
+          line += ' - Concluido ✔️'
+        }
+        content += `${line}\n\n`
+      } else {
+        content += `- [WIP] ${title}\n\n`
       }
-      
-      content += '\n'
     })
     
     content += `\n--- Exportado em ${new Date().toLocaleString('pt-BR')} ---`
