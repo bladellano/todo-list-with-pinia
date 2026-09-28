@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <div class="max-w-4xl mx-auto px-4 md:px-0">
+    <div class="max-w-7xl mx-auto px-4 md:px-0">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-colors">
         <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-pretty">
           Agents (disparo diário)
@@ -79,12 +79,31 @@
             <legend class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Tarefas vinculadas ({{ form.todoIds.length }})
             </legend>
-            <p v-if="activeTodos.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
+            <p v-if="activeTodosOrdered.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
               Nenhuma tarefa ativa. Crie tarefas na página inicial.
             </p>
-            <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-600 rounded-lg p-2">
+            <template v-else>
+              <label for="task-link-filter" class="sr-only">Filtrar tarefas</label>
+              <input
+                id="task-link-filter"
+                v-model="taskLinkFilter"
+                type="search"
+                autocomplete="off"
+                placeholder="Filtrar por título…"
+                class="w-full mb-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <p
+                v-if="filteredLinkTodos.length === 0"
+                class="text-sm text-gray-500 dark:text-gray-400 py-2"
+              >
+                Nenhuma tarefa corresponde ao filtro.
+              </p>
+              <div
+                v-else
+                class="max-h-48 overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-600 rounded-lg p-2"
+              >
               <label
-                v-for="todo in activeTodos"
+                v-for="todo in filteredLinkTodos"
                 :key="todo.id"
                 class="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer text-sm"
               >
@@ -94,9 +113,13 @@
                   v-model="form.todoIds"
                   class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span class="text-gray-800 dark:text-gray-100">{{ todo.title }}</span>
+                <span
+                  class="text-gray-800 dark:text-gray-100"
+                  :class="{ 'font-semibold': todo.pinned }"
+                >{{ todo.title }}</span>
               </label>
-            </div>
+              </div>
+            </template>
           </fieldset>
 
           <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -132,11 +155,11 @@
           Nenhum agent ainda.
         </div>
 
-        <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           <article
             v-for="agent in agentStore.agents"
             :key="agent.id"
-            class="border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+            class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col min-h-0"
           >
             <div class="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -160,7 +183,7 @@
               class="mt-3 text-xs whitespace-pre-wrap font-mono bg-gray-50 dark:bg-gray-900/50 p-3 rounded max-h-32 overflow-y-auto text-gray-700 dark:text-gray-300"
             >{{ agent.prompt }}</pre>
 
-            <div class="mt-3 flex flex-wrap gap-2">
+            <div class="mt-auto pt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 class="px-3 py-1.5 text-xs rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50"
@@ -193,6 +216,7 @@ const agentStore = useAgentStore()
 const todoStore = useTodoStore()
 
 const editingId = ref(null)
+const taskLinkFilter = ref('')
 
 const dayOptions = [
   { key: 'sun', label: 'Dom' },
@@ -216,9 +240,19 @@ const form = reactive({
   todoIds: []
 })
 
-const activeTodos = computed(() =>
-  todoStore.todos.filter((t) => !t.archived)
+const activeTodosOrdered = computed(() =>
+  todoStore.sortedTodos.filter((t) => !t.archived)
 )
+
+const filteredLinkTodos = computed(() => {
+  const q = taskLinkFilter.value.trim().toLowerCase()
+  if (!q) return activeTodosOrdered.value
+  return activeTodosOrdered.value.filter((t) => {
+    const title = (t.title || '').toLowerCase()
+    const desc = (t.description || '').toLowerCase()
+    return title.includes(q) || desc.includes(q)
+  })
+})
 
 onMounted(async () => {
   await Promise.all([agentStore.fetchAgents(), todoStore.fetchTodos()])
@@ -245,6 +279,7 @@ function resetForm() {
   form.enabled = false
   form.schedule = emptySchedule()
   form.todoIds = []
+  taskLinkFilter.value = ''
 }
 
 function startEdit(agent) {
