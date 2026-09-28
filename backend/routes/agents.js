@@ -61,14 +61,20 @@ export function setupAgentRoutes(app) {
     }
 
     const todosById = new Map(data.todos.map((t) => [t.id, t]))
-    const agents = data.agents
-      .filter((agent) => agentRunsOnDate(agent, date))
-      .map((agent) => buildAgentPayload(agent, todosById))
+    const weekdayKey = DAY_KEYS[date.getDay()]
+    const dueAgents = data.agents.filter((agent) => agentRunsOnDate(agent, date))
+    const agents = dueAgents.map((agent) => buildAgentPayload(agent, todosById))
 
     res.json({
       date: date.toISOString().slice(0, 10),
-      weekday: DAY_KEYS[date.getDay()],
-      agents
+      weekday: weekdayKey,
+      agents,
+      meta: {
+        configuredCount: data.agents.length,
+        dueCount: agents.length,
+        weekdayKey,
+        serverTime: date.toISOString()
+      }
     })
   })
 
