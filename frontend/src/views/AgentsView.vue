@@ -6,9 +6,9 @@
           Agents (disparo diário)
         </h1>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          O n8n consulta
+          O app só entrega instruções e tarefas vinculadas. O n8n consulta
           <code class="text-xs bg-gray-100 dark:bg-gray-700 px-1 rounded">GET /api/external/agent-dispatch</code>
-          com a mesma API Key dos outros endpoints externos.
+          (API Key) e o workflow processa o prompt com OpenAI antes de enviar o e-mail.
         </p>
 
         <form class="space-y-4" @submit.prevent="handleSave">
