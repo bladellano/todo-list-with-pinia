@@ -51,5 +51,24 @@
       "name": "DIVERSOS"
     }
   ],
-  "todoOrder": []
+  "todoOrder": [],
+  "agents": [
+    {
+      "id": 1769154600000,
+      "name": "Exemplo — revisar pendências",
+      "prompt": "# Objetivo\nRevise as tarefas vinculadas e sugira próximos passos.",
+      "enabled": false,
+      "schedule": {
+        "sun": false,
+        "mon": true,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": true,
+        "sat": false
+      },
+      "todoIds": [],
+      "createdAt": "2026-01-23T08:00:00.000Z"
+    }
+  ]
 }

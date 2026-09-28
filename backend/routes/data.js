@@ -61,6 +61,10 @@ export function setupDataRoutes(app) {
         importedData.todoOrder = []
       }
 
+      if (!Array.isArray(importedData.agents)) {
+        importedData.agents = []
+      }
+
       importedData.sessions = []
 
       const currentData = await readData()

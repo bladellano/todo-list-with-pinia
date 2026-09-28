@@ -108,6 +108,7 @@ const navItems = [
   { to: '/', label: 'Início' },
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/archived', label: 'Arquivadas' },
+  { to: '/agents', label: 'Agents' },
   { to: '/tags', label: 'Configuração' }
 ]
 

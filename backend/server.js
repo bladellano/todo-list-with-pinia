@@ -9,6 +9,7 @@ import { setupTodoRoutes } from './routes/todos.js'
 import { setupTagRoutes } from './routes/tags.js'
 import { setupDataRoutes } from './routes/data.js'
 import { setupAIRoutes } from './routes/ai.js'
+import { setupAgentRoutes } from './routes/agents.js'
 import { requireSession, isPublicApiRoute } from './middleware/sessionAuth.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -52,6 +53,7 @@ setupTodoRoutes(app)
 setupTagRoutes(app)
 setupDataRoutes(app)
 setupAIRoutes(app, process.env.OPENAI_API_KEY, process.env.OPENAI_MODEL)
+setupAgentRoutes(app)
 
 // Iniciar servidor
 await initDataFile()

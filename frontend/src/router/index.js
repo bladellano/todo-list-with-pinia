@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import TagsView from '../views/TagsView.vue'
+import AgentsView from '../views/AgentsView.vue'
 import ArchivedView from '../views/ArchivedView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -37,6 +38,12 @@ const router = createRouter({
       path: '/tags',
       name: 'tags',
       component: TagsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/agents',
+      name: 'agents',
+      component: AgentsView,
       meta: { requiresAuth: true }
     }
   ]

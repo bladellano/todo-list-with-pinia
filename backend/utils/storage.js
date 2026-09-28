@@ -26,6 +26,7 @@ export async function initDataFile() {
       todos: [],
       tags: [],
       todoOrder: [],
+      agents: [],
       sessions: []
     }
     await fs.writeFile(DATA_FILE, JSON.stringify(initialData, null, 2))
