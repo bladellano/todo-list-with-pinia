@@ -159,20 +159,20 @@
           <article
             v-for="agent in agentStore.agents"
             :key="agent.id"
-            class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col min-h-0"
+            class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col min-h-0 min-w-0 overflow-hidden"
           >
-            <div class="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h3 class="font-semibold text-gray-900 dark:text-gray-100 inline-flex items-center gap-1.5 min-w-0">
-                  <AgentRobotIcon />
-                  <span class="truncate">{{ agent.name }}</span>
+            <div class="flex items-start gap-2 min-w-0">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-start gap-1.5 text-sm leading-snug">
+                  <AgentRobotIcon class="mt-0.5 shrink-0" />
+                  <span class="min-w-0 break-words text-pretty">{{ agent.name }}</span>
                 </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words">
                   {{ scheduleSummary(agent.schedule) }} · {{ agent.todoIds?.length || 0 }} tarefa(s)
                 </p>
               </div>
               <span
-                class="text-xs px-2 py-1 rounded-full"
+                class="text-xs px-2 py-1 rounded-full shrink-0"
                 :class="agent.enabled
                   ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'"
