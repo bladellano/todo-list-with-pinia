@@ -59,11 +59,24 @@ export const useAgentStore = defineStore('agent', () => {
     }
   }
 
+  async function addTodoToAgents(todoId, agentIds) {
+    const uniqueIds = [...new Set(agentIds)]
+    await Promise.all(
+      uniqueIds.map(async (agentId) => {
+        const agent = agents.value.find((a) => a.id === agentId)
+        if (!agent) return
+        const todoIds = [...new Set([...(agent.todoIds || []), todoId])]
+        await updateAgent(agentId, { todoIds })
+      })
+    )
+  }
+
   return {
     agents,
     fetchAgents,
     addAgent,
     updateAgent,
-    deleteAgent
+    deleteAgent,
+    addTodoToAgents
   }
 })

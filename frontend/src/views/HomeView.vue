@@ -83,15 +83,12 @@
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  class="task-form__ai"
-                  @click="improveText"
-                  :disabled="!newTodo.title.trim() || isImprovingText"
-                  aria-label="Melhorar texto com IA"
-                >
-                  {{ isImprovingText ? 'Melhorando…' : 'Melhorar' }}
-                </button>
+                <AiSuggestButton
+                  aria-label="Sugestão de IA para o título"
+                  :disabled="!newTodo.title.trim()"
+                  :loading="isImprovingTitle"
+                  @click="improveTitle"
+                />
               </div>
             </div>
 
@@ -121,15 +118,22 @@
                   </button>
                 </div>
 
-                <textarea
-                  v-show="isEditTab"
-                  v-model="newTodo.description"
-                  aria-label="Descrição em Markdown"
-                  placeholder="Detalhes, links, checklist em Markdown…"
-                  rows="4"
-                  :disabled="isAdding"
-                  class="task-form__textarea"
-                />
+                <div v-show="isEditTab" class="task-form__description-row">
+                  <textarea
+                    v-model="newTodo.description"
+                    aria-label="Descrição em Markdown"
+                    placeholder="Detalhes, links, checklist em Markdown…"
+                    rows="4"
+                    :disabled="isAdding"
+                    class="task-form__textarea task-form__textarea--with-ai"
+                  />
+                  <AiSuggestButton
+                    aria-label="Sugestão de IA para a descrição"
+                    :disabled="!newTodo.description.trim()"
+                    :loading="isImprovingDescription"
+                    @click="improveDescription"
+                  />
+                </div>
 
                 <MarkdownContent
                   v-if="isPreviewTab"
@@ -153,6 +157,31 @@
                     : 'task-form__chip--idle'"
                 >
                   {{ tag.name }}
+                </button>
+              </div>
+            </fieldset>
+
+            <fieldset v-if="agentStore.agents.length > 0" class="task-form__fieldset">
+              <legend class="task-form__label mb-2">Agents (opcional)</legend>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Vincula esta tarefa aos agents selecionados para o disparo no n8n.
+              </p>
+              <div class="task-form__chips">
+                <button
+                  v-for="agent in agentStore.agents"
+                  :key="agent.id"
+                  type="button"
+                  @click="toggleNewTodoAgent(agent.id)"
+                  class="task-form__chip border-2"
+                  :class="newTodoAgentIds.includes(agent.id)
+                    ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-900 dark:text-violet-200 border-violet-400 dark:border-violet-600 task-form__chip--active'
+                    : 'task-form__chip--idle'"
+                  :title="agent.enabled ? 'Agent ativo' : 'Agent inativo'"
+                >
+                  <span class="inline-flex items-center gap-1.5">
+                    <AgentRobotIcon />
+                    {{ agent.name }}
+                  </span>
                 </button>
               </div>
             </fieldset>
@@ -498,6 +527,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 import { useTagStore } from '../stores/tag'
+import { useAgentStore } from '../stores/agent'
 import { getTagColor } from '../utils/colors'
 import { useSuggestions } from '../composables/useSuggestions'
 import { useAI } from '../composables/useAI'
@@ -511,10 +541,15 @@ import TodoItem from '../components/TodoItem.vue'
 import TodoEditModal from '../components/TodoEditModal.vue'
 import TodoViewModal from '../components/TodoViewModal.vue'
 import MarkdownContent from '../components/MarkdownContent.vue'
+import AgentRobotIcon from '../components/AgentRobotIcon.vue'
+import AiSuggestButton from '../components/AiSuggestButton.vue'
 import Toast from '../components/Toast.vue'
 
 const todoStore = useTodoStore()
 const tagStore = useTagStore()
+const agentStore = useAgentStore()
+
+const newTodoAgentIds = ref([])
 
 const newTodo = ref({
   title: '',
@@ -563,7 +598,7 @@ const hasMoreTodos = computed(() => {
 })
 
 const suggestions = useSuggestions(computed(() => todoStore.todos), computed(() => newTodo.value.title))
-const { isImprovingText, improveText: aiImproveText } = useAI()
+const { isImprovingTitle, isImprovingDescription, improveText: aiImproveText } = useAI()
 const { exportSelectedAsTxt, exportData, importData } = useExport()
 const { initSortable } = useDragAndDrop(
   todoListRef, 
@@ -614,10 +649,18 @@ function closeSuggestions() {
   suggestions.closeSuggestions()
 }
 
-async function improveText() {
-  const improved = await aiImproveText(newTodo.value.title)
+async function improveTitle() {
+  const improved = await aiImproveText(newTodo.value.title, { busyRef: isImprovingTitle })
   if (improved) {
     newTodo.value.title = improved
+  }
+}
+
+async function improveDescription() {
+  const improved = await aiImproveText(newTodo.value.description, { busyRef: isImprovingDescription })
+  if (improved) {
+    newTodo.value.description = improved
+    setTab('edit')
   }
 }
 
@@ -626,7 +669,8 @@ onMounted(async () => {
   try {
     await Promise.all([
       todoStore.fetchTodos(),
-      tagStore.fetchTags()
+      tagStore.fetchTags(),
+      agentStore.fetchAgents()
     ])
   } finally {
     isLoading.value = false
@@ -693,12 +737,24 @@ function toggleTag(tagId) {
   }
 }
 
+function toggleNewTodoAgent(agentId) {
+  const index = newTodoAgentIds.value.indexOf(agentId)
+  if (index > -1) {
+    newTodoAgentIds.value.splice(index, 1)
+  } else {
+    newTodoAgentIds.value.push(agentId)
+  }
+}
+
 async function handleAddTodo() {
   if (!newTodo.value.title.trim() || isAdding.value) return
 
   isAdding.value = true
   try {
-    await todoStore.addTodo({ ...newTodo.value })
+    const created = await todoStore.addTodo({ ...newTodo.value })
+    if (newTodoAgentIds.value.length > 0 && created?.id) {
+      await agentStore.addTodoToAgents(created.id, newTodoAgentIds.value)
+    }
     showSuccess('Tarefa adicionada com sucesso!')
     newTodo.value = {
       title: '',
@@ -707,6 +763,7 @@ async function handleAddTodo() {
       done: false,
       pinned: false
     }
+    newTodoAgentIds.value = []
   } finally {
     isAdding.value = false
   }
@@ -807,7 +864,8 @@ function handleImportData() {
   importData(async () => {
     await Promise.all([
       todoStore.fetchTodos(),
-      tagStore.fetchTags()
+      tagStore.fetchTags(),
+      agentStore.fetchAgents()
     ])
   })
 }
@@ -907,8 +965,12 @@ function handleImportData() {
   @apply block text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5;
 }
 
-.task-form__ai {
-  @apply inline-flex items-center justify-center shrink-0 px-3 py-2.5 text-xs md:text-sm font-medium rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-40 disabled:cursor-not-allowed;
+.task-form__description-row {
+  @apply flex items-start gap-2 p-2 pt-0;
+}
+
+.task-form__textarea--with-ai {
+  @apply flex-1 min-w-0;
 }
 
 .task-form__editor {

@@ -163,7 +163,10 @@
           >
             <div class="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ agent.name }}</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 inline-flex items-center gap-1.5 min-w-0">
+                  <AgentRobotIcon />
+                  <span class="truncate">{{ agent.name }}</span>
+                </h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {{ scheduleSummary(agent.schedule) }} · {{ agent.todoIds?.length || 0 }} tarefa(s)
                 </p>
@@ -209,6 +212,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppLayout from '../components/AppLayout.vue'
+import AgentRobotIcon from '../components/AgentRobotIcon.vue'
 import { useAgentStore } from '../stores/agent'
 import { useTodoStore } from '../stores/todo'
 

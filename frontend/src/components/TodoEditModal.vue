@@ -38,24 +38,12 @@
             required
             class="flex-1 min-w-0 px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
-          <button
-            type="button"
+          <AiSuggestButton
+            aria-label="Sugestão de IA para o título"
+            :disabled="!editForm.title.trim()"
+            :loading="isImprovingText"
             @click="improveText"
-            :disabled="!editForm.title.trim() || isImprovingText"
-            aria-label="Melhorar texto com IA"
-            class="p-2.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
-            :class="!editForm.title.trim() || isImprovingText
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-yellow-500 text-white hover:bg-yellow-600'"
-          >
-            <svg v-if="!isImprovingText" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
-            </svg>
-            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </button>
+          />
         </div>
       </div>
 
@@ -97,26 +85,13 @@
             class="flex-1 min-w-0 px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-y min-h-[6rem] max-h-[40vh] overflow-y-auto"
           />
 
-          <button
+          <AiSuggestButton
             v-show="activeTab === 'edit'"
-            type="button"
+            aria-label="Sugestão de IA para a descrição"
+            :disabled="!editForm.description.trim()"
+            :loading="isImprovingDescription"
             @click="improveDescription"
-            :disabled="!editForm.description.trim() || isImprovingDescription"
-            aria-label="Melhorar descrição com IA"
-            class="p-2.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center shrink-0 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-yellow-400"
-            :class="!editForm.description.trim() || isImprovingDescription
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-yellow-500 text-white hover:bg-yellow-600'"
-            title="Melhorar descrição com IA"
-          >
-            <svg v-if="!isImprovingDescription" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
-            </svg>
-            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </button>
+          />
         </div>
 
         <MarkdownContent
@@ -222,6 +197,7 @@ import { apiFetch } from '../utils/api'
 import EmailInput from './EmailInput.vue'
 import BaseModal from './BaseModal.vue'
 import MarkdownContent from './MarkdownContent.vue'
+import AiSuggestButton from './AiSuggestButton.vue'
 
 const props = defineProps({
   todo: {

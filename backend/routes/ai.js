@@ -33,7 +33,7 @@ export function setupAIRoutes(app, apiKey, model = 'gpt-4o-mini') {
             content: `Melhore o texto e seu entendimento: "${text}"`
           }
         ],
-        max_tokens: 100,
+        max_tokens: text.length > 120 ? 1500 : 150,
         temperature: 0.3
       })
       
