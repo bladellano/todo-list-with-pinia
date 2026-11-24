@@ -47,6 +47,18 @@
         </div>
       </div>
 
+      <div
+        v-if="todo.emailSlug"
+        class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/60 px-4 py-3"
+      >
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+          Slug do e-mail (create-todo)
+        </p>
+        <p class="text-sm font-mono text-gray-800 dark:text-gray-200 break-all">
+          {{ todo.emailSlug }}
+        </p>
+      </div>
+
       <div>
         <label for="edit-todo-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Descrição

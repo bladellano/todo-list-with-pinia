@@ -1,0 +1,146 @@
+{
+  "name": "Gmail create-todo → Todo App",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-schedule",
+      "name": "Diário",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-200, 0]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 25,
+        "filters": {
+          "q": "in:inbox subject:create-todo is:unread"
+        }
+      },
+      "id": "a1b2c3d4-gmail-get",
+      "name": "Gmail — novos create-todo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [40, 0],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CONFIGURE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const CREATE_TODO_PREFIX = /^create-todo\\s*/i;\n\nfunction normalizeEmailSlug(value) {\n  if (value == null || typeof value !== 'string') return '';\n  return value\n    .normalize('NFD')\n    .replace(/\\p{M}/gu, '')\n    .toLowerCase()\n    .trim()\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\n\nconst output = [];\n\nfor (const item of $input.all()) {\n  const msg = item.json;\n  const subject = msg.subject || msg.Subject || '';\n  if (!CREATE_TODO_PREFIX.test(subject)) continue;\n\n  const title = subject.replace(CREATE_TODO_PREFIX, '').trim();\n  if (!title) continue;\n\n  const emailSlug = normalizeEmailSlug(title);\n  if (!emailSlug) continue;\n\n  const description = (msg.textPlain || msg.text || msg.snippet || '').trim();\n  const messageId = msg.id || msg.messageId;\n  if (!messageId) continue;\n\n  output.push({\n    json: {\n      title,\n      description,\n      emailSlug,\n      gmailMessageId: messageId\n    }\n  });\n}\n\nreturn output;"
+      },
+      "id": "a1b2c3d4-code",
+      "name": "Preparar create-todo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [280, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:3001/api/external/todos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.title, description: $json.description, emailSlug: $json.emailSlug }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-http",
+      "name": "Criar tarefa no app",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CONFIGURE_TODO_HEADER_AUTH_ID",
+          "name": "Header Auth - Todo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Preparar create-todo').item.json.gmailMessageId }}"
+      },
+      "id": "a1b2c3d4-gmail-read",
+      "name": "Gmail — marcar como lida",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [760, 0],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CONFIGURE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Diário": {
+      "main": [
+        [
+          {
+            "node": "Gmail — novos create-todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — novos create-todo": {
+      "main": [
+        [
+          {
+            "node": "Preparar create-todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar create-todo": {
+      "main": [
+        [
+          {
+            "node": "Criar tarefa no app",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar tarefa no app": {
+      "main": [
+        [
+          {
+            "node": "Gmail — marcar como lida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
