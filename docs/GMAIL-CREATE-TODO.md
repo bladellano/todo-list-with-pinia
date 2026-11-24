@@ -9,7 +9,7 @@ Automação n8n que lê e-mails com assunto começando por `create-todo`, cria t
 | `create-todo Comprar leite` | Comprar leite | `comprar-leite` |
 | `CREATE-TODO Rever contrato` | Rever contrato | `rever-contrato` |
 
-O corpo do e-mail vira a **descrição** (texto puro ou snippet).
+O corpo do e-mail vira a **descrição** (texto puro ou snippet). A tarefa é criada já **fixada** (`pinned: true`), no topo da lista.
 
 ## API
 

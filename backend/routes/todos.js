@@ -91,7 +91,7 @@ export function setupTodoRoutes(app) {
       emailSlug: slug,
       tagIds: [],
       done: false,
-      pinned: false,
+      pinned: true,
       archived: false,
       notificable: false,
       sendByEmail: false,
@@ -103,6 +103,16 @@ export function setupTodoRoutes(app) {
     }
 
     data.todos.push(newTodo)
+
+    if (!Array.isArray(data.todoOrder)) {
+      data.todoOrder = []
+    }
+    if (data.todoOrder.length === 0) {
+      data.todoOrder = data.todos.map(t => t.id)
+    }
+    data.todoOrder = data.todoOrder.filter(id => id !== newTodo.id)
+    data.todoOrder.unshift(newTodo.id)
+
     await writeData(data)
 
     res.status(201).json({
