@@ -1,5 +1,5 @@
-// Cole no node n8n "Preparar create-todo" (Code) — após Gmail "Get Many".
-// Entrada: itens do Gmail (subject, id, snippet, textPlain / text quando disponível).
+// Cole no node n8n "Preparar create-todo" (Code), modo "Run Once for All Items".
+// Junta todos os e-mails do evento numa única lista para um só POST.
 
 const CREATE_TODO_PREFIX = /^create-todo\s*/i;
 
@@ -14,42 +14,31 @@ function normalizeEmailSlug(value) {
     .replace(/^-+|-+$/g, '');
 }
 
-const output = [];
+const items = [];
 
 for (const item of $input.all()) {
   const msg = item.json;
   const subject = msg.subject || msg.Subject || '';
 
-  if (!CREATE_TODO_PREFIX.test(subject)) {
-    continue;
-  }
+  if (!CREATE_TODO_PREFIX.test(subject)) continue;
 
   const title = subject.replace(CREATE_TODO_PREFIX, '').trim();
-  if (!title) {
-    continue;
-  }
+  if (!title) continue;
 
   const emailSlug = normalizeEmailSlug(title);
-  if (!emailSlug) {
-    continue;
-  }
-
-  const description =
-    (msg.textPlain || msg.text || msg.snippet || '').trim();
+  if (!emailSlug) continue;
 
   const messageId = msg.id || msg.messageId;
-  if (!messageId) {
-    continue;
-  }
+  if (!messageId) continue;
 
-  output.push({
-    json: {
-      title,
-      description,
-      emailSlug,
-      gmailMessageId: messageId
-    }
+  items.push({
+    title,
+    description: (msg.textPlain || msg.text || msg.snippet || '').trim(),
+    emailSlug,
+    gmailMessageId: messageId
   });
 }
 
-return output;
+if (items.length === 0) return [];
+
+return [{ json: { items } }];

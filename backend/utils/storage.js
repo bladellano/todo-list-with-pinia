@@ -41,3 +41,23 @@ export async function readData() {
 export async function writeData(data) {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2))
 }
+
+let writeQueue = Promise.resolve()
+
+// Serializa leitura + alteração + gravação. Vários POSTs ao mesmo tempo
+// (n8n dispara um por e-mail) não podem sobrescrever o arquivo uns aos outros.
+export function updateData(mutator) {
+  const run = writeQueue.then(async () => {
+    const data = await readData()
+    const value = await mutator(data)
+    await writeData(data)
+    return value
+  })
+
+  writeQueue = run.then(
+    () => undefined,
+    () => undefined
+  )
+
+  return run
+}
